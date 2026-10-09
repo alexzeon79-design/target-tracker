@@ -1,3 +1,5 @@
+Ось повний код: іконки на карті збільшені до 22 px, у кнопках — до 18 px. Центрування, червоний колір та обертання збережені.
+Замініть вміст HTML-файлу:
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -12,11 +14,11 @@
 <style>
   :root {
     color-scheme: light;
+    --map-icon-size: 22px;
+    --picker-icon-size: 18px;
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   body {
     margin: 0;
@@ -31,16 +33,8 @@
     background: #172554;
   }
 
-  h1 {
-    margin: 0 0 6px;
-    font-size: 23px;
-  }
-
-  header p {
-    margin: 0;
-    font-size: 14px;
-    opacity: 0.92;
-  }
+  h1 { margin: 0 0 6px; font-size: 23px; }
+  header p { margin: 0; font-size: 14px; opacity: 0.92; }
 
   main {
     max-width: 760px;
@@ -96,7 +90,7 @@
     justify-content: center;
     gap: 6px;
     flex: 1 1 90px;
-    min-height: 44px;
+    min-height: 46px;
     padding: 8px;
     color: #596575;
     background: #f8fafc;
@@ -111,9 +105,11 @@
     border-color: #dc2626;
   }
 
+  /* Іконки в кнопках — 18 px */
   .icon-option img {
-    width: 24px;
-    height: 24px;
+    display: block;
+    width: var(--picker-icon-size);
+    height: var(--picker-icon-size);
     flex-shrink: 0;
     object-fit: contain;
   }
@@ -130,7 +126,8 @@
     font-size: 15px;
   }
 
-  .coords-input:focus {
+  .coords-input:focus,
+  .course-num:focus {
     outline: none;
     border-color: #2563eb;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
@@ -157,14 +154,8 @@
     font-size: 14px;
   }
 
-  .course-num:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-  }
-
   .course-range {
-    min-width: 80px;
+    min-width: 60px;
     flex: 1;
     accent-color: #2563eb;
   }
@@ -189,13 +180,8 @@
     font-size: 12px;
   }
 
-  .card-status.ok {
-    color: #067647;
-  }
-
-  .card-status.err {
-    color: #b42318;
-  }
+  .card-status.ok { color: #067647; }
+  .card-status.err { color: #b42318; }
 
   button {
     padding: 12px 14px;
@@ -272,9 +258,7 @@
     animation: spin 0.7s linear infinite;
   }
 
-  .btn-screenshot.loading .spinner {
-    display: block;
-  }
+  .btn-screenshot.loading .spinner { display: block; }
 
   @keyframes spin {
     to { transform: rotate(360deg); }
@@ -296,12 +280,14 @@
   }
 
   .dark-tiles {
-    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+    filter: brightness(0.6) invert(1) contrast(3)
+      hue-rotate(200deg) saturate(0.3) brightness(0.7);
   }
 
   .heading-icon {
     background: transparent;
     border: 0;
+    pointer-events: none;
   }
 
   .heading-marker {
@@ -315,11 +301,10 @@
     position: absolute;
     top: 9px;
     left: 74px;
-    width: 0;
+    width: 2px;
     height: 66px;
-    border-left: 2px dashed rgba(37, 99, 235, 0.95);
-    filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.95));
-    transform-origin: center bottom;
+    border-left: 2px dashed #dc2626;
+    transform-origin: 1px bottom;
   }
 
   .heading-ray::before {
@@ -334,15 +319,24 @@
     border-left: 5px solid transparent;
   }
 
+  /* Іконки на карті — 22 px, автоматично по центру */
   .vehicle-symbol {
     position: absolute;
-    top: 63px;
-    left: 63px;
-    width: 24px;
-    height: 24px;
+    top: 50%;
+    left: 50%;
+    width: var(--map-icon-size);
+    height: var(--map-icon-size);
+    transform: translate(-50%, -50%);
     pointer-events: auto;
     cursor: pointer;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+  }
+
+  .vehicle-symbol img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform-origin: 50% 50%;
   }
 
   #preview-wrap {
@@ -394,7 +388,9 @@
   }
 
   @supports (padding: env(safe-area-inset-bottom)) {
-    footer { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+    footer {
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
   }
 </style>
 </head>
@@ -419,6 +415,7 @@
   <p class="direction-note">
     Пунктир лише візуально показує курс. Його довжина фіксована на
     екрані та не відповідає реальній відстані або прогнозу руху.
+    Курс 0° — північ, 90° — схід.
   </p>
 
   <button class="btn-screenshot" id="screenshot" type="button" disabled>
@@ -434,15 +431,21 @@
     <img id="preview-img" alt="Попередній перегляд скріншота карти">
 
     <div id="preview-bar">
-      <button class="btn-save" id="btn-save" type="button">💾 Зберегти</button>
-      <button class="btn-share" id="btn-share" type="button">📤 Поділитися</button>
-      <button class="btn-close" id="btn-close" type="button" aria-label="Закрити попередній перегляд">✕</button>
+      <button class="btn-save" id="btn-save" type="button">
+        💾 Зберегти
+      </button>
+      <button class="btn-share" id="btn-share" type="button">
+        📤 Поділитися
+      </button>
+      <button class="btn-close" id="btn-close" type="button"
+        aria-label="Закрити попередній перегляд">✕</button>
     </div>
   </div>
 </main>
 
 <footer>
-  Карта — OpenStreetMap / Google. Для завантаження карти потрібне підключення до інтернету.
+  Карта — OpenStreetMap / Google.
+  Для завантаження карти потрібне підключення до інтернету.
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -452,30 +455,74 @@
 "use strict";
 
 const VEHICLE_COUNT = 3;
+const ICON_COLOR = "#dc2626";
 
-// Шляхи до файлів у папці assets
+function createIconURL(path) {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="64" height="64" viewBox="0 0 64 64">
+      <path fill="${ICON_COLOR}" d="${path}"/>
+    </svg>
+  `;
+
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+
 const VEHICLE_TYPES = {
-  geran: { label: "Герань", image: "assets/geran-marker.png" },
-  rocket: { label: "Ракета", image: "assets/rocket-marker.png" },
-  banderol: { label: "Бандероль", image: "assets/banderol-marker.png" }
+  geran: {
+    label: "Герань",
+    image: createIconURL(`
+      M32 3
+      C29.5 3 28.5 6 28 10
+      L27 16 L4 48 L4 54 L23 46 L27 49 L27 54
+      L22 58 L22 61 L30 58 L32 62 L34 58 L42 61
+      L42 58 L37 54 L37 49 L41 46 L60 54 L60 48
+      L37 16 L36 10
+      C35.5 6 34.5 3 32 3 Z
+    `)
+  },
+  rocket: {
+    label: "Ракета",
+    image: createIconURL(`
+      M32 3
+      C29.5 5 28.5 9 28.5 14
+      L28.5 24 L10 34 L10 38 L28.5 32 L29 47
+      L21 53 L21 56 L29 53 L30 61 L34 61 L35 53
+      L43 56 L43 53 L35 47 L35.5 32 L54 38 L54 34
+      L35.5 24 L35.5 14
+      C35.5 9 34.5 5 32 3 Z
+    `)
+  },
+  banderol: {
+    label: "Бандероль",
+    image: createIconURL(`
+      M32 3
+      C29 3 28 6 28 10
+      L28 28 L8 33 L8 38 L28 35 L28 51 L22 53
+      L22 57 L29 56 L29 61 L35 61 L35 56 L42 57
+      L42 53 L36 51 L36 35 L56 38 L56 33 L36 28
+      L36 10 C36 6 35 3 32 3 Z
+    `)
+  }
 };
-
-const VEHICLE_COLORS = [
-  { main: "#dc2626" },
-  { main: "#dc2626" },
-  { main: "#dc2626" }
-];
 
 const cardsContainer = document.getElementById("cards-container");
 
-function createCompassSVG(color) {
+function createCompassSVG() {
   return `
     <svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="50" cy="50" r="43" fill="#eff6ff" stroke="#bfdbfe" stroke-width="5"></circle>
+      <circle cx="50" cy="50" r="43" fill="#eff6ff"
+        stroke="#bfdbfe" stroke-width="5"></circle>
+
       <g class="compass-g" transform="rotate(0,50,50)">
-        <polygon points="50,8 64,55 50,46 36,55" fill="${color}" stroke="#172554" stroke-width="3" stroke-linejoin="round"></polygon>
-        <polygon points="50,92 36,55 50,64 64,55" fill="#cbd5e1" stroke="#64748b" stroke-width="3" stroke-linejoin="round"></polygon>
+        <polygon points="50,8 64,55 50,46 36,55"
+          fill="${ICON_COLOR}" stroke="#172554" stroke-width="3"
+          stroke-linejoin="round"></polygon>
+        <polygon points="50,92 36,55 50,64 64,55"
+          fill="#cbd5e1" stroke="#64748b" stroke-width="3"
+          stroke-linejoin="round"></polygon>
       </g>
+
       <circle cx="50" cy="50" r="5" fill="#ffffff"></circle>
     </svg>
   `;
@@ -483,9 +530,8 @@ function createCompassSVG(color) {
 
 function createCard(index) {
   const number = index + 1;
-  const color = VEHICLE_COLORS[index].main;
-
   const card = document.createElement("section");
+
   card.className = "target-card";
   card.dataset.course = "0";
   card.dataset.index = String(index);
@@ -493,18 +539,15 @@ function createCard(index) {
 
   card.innerHTML = `
     <div class="card-title">
-      <span class="dot" style="background:${color}" aria-hidden="true"></span>
+      <span class="dot" aria-hidden="true"></span>
       <span class="object-name">Герань ${number}</span>
     </div>
 
-    <div class="icon-picker" role="group" aria-label="Тип об’єкта ${number}">
+    <div class="icon-picker" role="group"
+      aria-label="Тип об’єкта ${number}">
       ${Object.entries(VEHICLE_TYPES).map(([type, definition]) => `
-        <button
-          type="button"
-          class="icon-option"
-          data-type="${type}"
-          aria-pressed="${type === "geran"}"
-        >
+        <button type="button" class="icon-option"
+          data-type="${type}" aria-pressed="${type === "geran"}">
           <img src="${definition.image}" alt="" aria-hidden="true">
           ${definition.label}
         </button>
@@ -512,25 +555,29 @@ function createCard(index) {
     </div>
 
     <label for="coords-${number}">Координати</label>
-    <textarea
-      id="coords-${number}"
-      class="coords-input"
+
+    <textarea id="coords-${number}" class="coords-input"
       placeholder="48.123456, 32.654321"
-      autocapitalize="off"
-      autocomplete="off"
-      spellcheck="false"
-      aria-describedby="status-${number}"
-    ></textarea>
+      autocapitalize="off" autocomplete="off" spellcheck="false"
+      aria-describedby="status-${number}"></textarea>
 
     <div class="course-row">
       <label for="course-num-${number}">Курс</label>
-      <input id="course-num-${number}" type="number" class="course-num" min="0" max="359" step="1" value="0" inputmode="numeric">
-      <input id="course-range-${number}" type="range" class="course-range" min="0" max="359" step="1" value="0">
+
+      <input id="course-num-${number}" type="number"
+        class="course-num" min="0" max="359" step="1"
+        value="0" inputmode="numeric">
+
+      <input id="course-range-${number}" type="range"
+        class="course-range" min="0" max="359" step="1"
+        value="0" aria-label="Курс об’єкта ${number}, градуси">
+
       <span class="course-deg">0°</span>
-      <div class="compass-wrap">${createCompassSVG(color)}</div>
+      <div class="compass-wrap">${createCompassSVG()}</div>
     </div>
 
-    <div id="status-${number}" class="card-status" aria-live="polite"></div>
+    <div id="status-${number}" class="card-status"
+      aria-live="polite"></div>
   `;
 
   return card;
@@ -540,95 +587,64 @@ for (let index = 0; index < VEHICLE_COUNT; index += 1) {
   cardsContainer.appendChild(createCard(index));
 }
 
-const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  crossOrigin: true,
-  attribution: '&copy; OpenStreetMap contributors'
-});
+const cards = document.querySelectorAll(".target-card");
 
-const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=uk&x={x}&y={y}&z={z}', {
-  maxZoom: 20,
-  crossOrigin: true,
-  attribution: '&copy; Google Maps'
-});
+const osmAttribution =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
-const darkLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  crossOrigin: true,
-  className: 'dark-tiles',
-  attribution: '&copy; OpenStreetMap contributors'
-});
+const osm = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  {
+    maxZoom: 19,
+    crossOrigin: true,
+    attribution: osmAttribution
+  }
+);
+
+const googleHybrid = L.tileLayer(
+  "https://mt1.google.com/vt/lyrs=y&hl=uk&x={x}&y={y}&z={z}",
+  {
+    maxZoom: 20,
+    crossOrigin: true,
+    attribution: "&copy; Google Maps"
+  }
+);
+
+const darkLayer = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  {
+    maxZoom: 19,
+    crossOrigin: true,
+    className: "dark-tiles",
+    attribution: osmAttribution
+  }
+);
 
 const map = L.map("map", {
   zoomControl: true,
   layers: [osm]
 }).setView([48.35, 32.25], 9);
 
-const baseMaps = {
+L.control.layers({
   "🗺 Схема": osm,
   "🛰 Супутник + Назви (UA)": googleHybrid,
   "🌙 Темна": darkLayer
-};
-
-L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+}, null, {
+  position: "topright"
+}).addTo(map);
 
 const markers = new Array(VEHICLE_COUNT).fill(null);
 
+const showAllButton = document.getElementById("show-all");
+const screenshotButton = document.getElementById("screenshot");
+const errorElement = document.getElementById("error");
+const coordsOutput = document.getElementById("coords-out");
+const previewWrap = document.getElementById("preview-wrap");
+const previewImg = document.getElementById("preview-img");
+
 let screenshotBlob = null;
 let previewObjectURL = null;
-
-function buildVehicleImage(course, size, type = "geran") {
-  const normalizedCourse = ((Number(course) % 360) + 360) % 360;
-
-  return `
-    <img
-      src="${VEHICLE_TYPES[type].image}"
-      width="${size}"
-      height="${size}"
-      alt=""
-      aria-hidden="true"
-      style="display:block;transform:rotate(${normalizedCourse}deg);"
-    >
-  `;
-}
-
-function vehicleIcon(course, index) {
-  const normalizedCourse = ((Number(course) % 360) + 360) % 360;
-  const colors = VEHICLE_COLORS[index];
-  const size = 24;
-
-  return L.divIcon({
-    html: `
-      <div class="heading-marker">
-        <div
-          class="heading-ray"
-          style="
-            transform:rotate(${normalizedCourse}deg);
-            border-left-color:${colors.main};
-          "
-          aria-hidden="true"
-        ></div>
-
-        <div class="vehicle-symbol">
-          ${buildVehicleImage(normalizedCourse, size, cards[index].dataset.type)}
-        </div>
-      </div>
-    `,
-    className: "heading-icon",
-    iconSize: [150, 150],
-    iconAnchor: [75, 75],
-    popupAnchor: [0, -18]
-  });
-}
-
-function parseCoords(raw) {
-  const parts = raw.trim().replace(/[;\n\t]+/g, " ").replace(/,/g, " ").split(/\s+/).filter(Boolean);
-  if (parts.length !== 2) return null;
-  const lat = Number(parts[0]), lon = Number(parts[1]);
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
-  return [lat, lon];
-}
+let screenshotInProgress = false;
 
 function normalizeCourse(value) {
   let course = Number(value);
@@ -636,7 +652,56 @@ function normalizeCourse(value) {
   return ((Math.round(course) % 360) + 360) % 360;
 }
 
-const cards = document.querySelectorAll(".target-card");
+function buildVehicleImage(course, type = "geran") {
+  const heading = normalizeCourse(course);
+
+  return `
+    <img src="${VEHICLE_TYPES[type].image}"
+      alt="" aria-hidden="true" draggable="false"
+      style="transform:rotate(${heading}deg);">
+  `;
+}
+
+function vehicleIcon(course, index) {
+  const heading = normalizeCourse(course);
+  const type = cards[index].dataset.type;
+
+  return L.divIcon({
+    html: `
+      <div class="heading-marker">
+        <div class="heading-ray"
+          style="transform:rotate(${heading}deg);"
+          aria-hidden="true"></div>
+
+        <div class="vehicle-symbol">
+          ${buildVehicleImage(heading, type)}
+        </div>
+      </div>
+    `,
+    className: "heading-icon",
+    iconSize: [150, 150],
+    iconAnchor: [75, 75],
+    popupAnchor: [0, -20]
+  });
+}
+
+function parseCoords(raw) {
+  const parts = raw.trim()
+    .replace(/[;\n\t]+/g, " ")
+    .replace(/,/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length !== 2) return null;
+
+  const lat = Number(parts[0]);
+  const lon = Number(parts[1]);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+
+  return [lat, lon];
+}
 
 function objectLabel(index) {
   return `${VEHICLE_TYPES[cards[index].dataset.type].label} ${index + 1}`;
@@ -651,24 +716,49 @@ function markerPopup(index, point, course) {
   `;
 }
 
+function updateCoordsOutput() {
+  coordsOutput.textContent = markers.map((marker, index) => {
+    if (!marker) return null;
+
+    const point = marker.getLatLng();
+    const course = normalizeCourse(cards[index].dataset.course);
+
+    return `${objectLabel(index)}: ` +
+      `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)} | ` +
+      `Курс: ${course}°`;
+  }).filter(Boolean).join("\n");
+}
+
+function updateScreenshotButton() {
+  screenshotButton.disabled =
+    screenshotInProgress || !markers.some(Boolean);
+}
+
 function refreshMarker(index) {
   const marker = markers[index];
   if (!marker) return;
 
   const course = normalizeCourse(cards[index].dataset.course);
+  const point = marker.getLatLng();
+
   marker.options.title = objectLabel(index);
   marker.setIcon(vehicleIcon(course, index));
-  marker.setPopupContent(markerPopup(index, marker.getLatLng(), course));
+  marker.setPopupContent(markerPopup(index, point, course));
 
-  document.getElementById("coords-out").textContent = markers
-    .map((existingMarker, markerIndex) => {
-      if (!existingMarker) return null;
-      const point = existingMarker.getLatLng();
-      const heading = normalizeCourse(cards[markerIndex].dataset.course);
-      return `${objectLabel(markerIndex)}: ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)} | Курс: ${heading}°`;
-    })
-    .filter(Boolean)
-    .join("\n");
+  const element = marker.getElement();
+
+  if (element) {
+    element.setAttribute("title", objectLabel(index));
+    element.setAttribute("aria-label", objectLabel(index));
+  }
+
+  const status = cards[index].querySelector(".card-status");
+
+  status.textContent =
+    `✅ ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)} | ${course}°`;
+  status.className = "card-status ok";
+
+  updateCoordsOutput();
 }
 
 cards.forEach((card, index) => {
@@ -682,61 +772,66 @@ cards.forEach((card, index) => {
     button.addEventListener("click", () => {
       card.dataset.type = button.dataset.type;
       card.querySelector(".object-name").textContent = objectLabel(index);
+
       card.querySelectorAll(".icon-option").forEach(option => {
         option.setAttribute("aria-pressed", String(option === button));
       });
+
       refreshMarker(index);
     });
   });
 
   function setCourse(value) {
     const course = normalizeCourse(value);
+
     card.dataset.course = String(course);
     numEl.value = String(course);
     rangeEl.value = String(course);
     degEl.textContent = `${course}°`;
+
     compassG.setAttribute("transform", `rotate(${course},50,50)`);
+
     refreshMarker(index);
   }
 
-  numEl.addEventListener("input", () => { if (numEl.value !== "") setCourse(numEl.value); });
-  numEl.addEventListener("change", () => { setCourse(numEl.value); });
-  rangeEl.addEventListener("input", () => { setCourse(rangeEl.value); });
+  numEl.addEventListener("input", () => {
+    if (numEl.value !== "") setCourse(numEl.value);
+  });
+
+  numEl.addEventListener("change", () => setCourse(numEl.value));
+  rangeEl.addEventListener("input", () => setCourse(rangeEl.value));
 
   coordsInput.addEventListener("keydown", event => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      document.getElementById("show-all").click();
+      showAllButton.click();
     }
   });
 });
 
-const showAllButton = document.getElementById("show-all");
-const screenshotButton = document.getElementById("screenshot");
-const errorElement = document.getElementById("error");
-const coordsOutput = document.getElementById("coords-out");
+function removeMarker(index) {
+  if (!markers[index]) return;
+  map.removeLayer(markers[index]);
+  markers[index] = null;
+}
 
 showAllButton.addEventListener("click", () => {
-  errorElement.style.color = "#b42318";
   errorElement.textContent = "";
 
   const bounds = [];
-  const outputLines = [];
-
-  let anyShown = false;
   let hasInvalidInput = false;
 
   cards.forEach((card, index) => {
-    const coordsInput = card.querySelector(".coords-input");
+    const input = card.querySelector(".coords-input");
     const status = card.querySelector(".card-status");
-
-    const raw = coordsInput.value.trim();
+    const raw = input.value.trim();
     const course = normalizeCourse(card.dataset.course);
 
     if (!raw) {
       status.textContent = "";
       status.className = "card-status";
-      if (markers[index]) { map.removeLayer(markers[index]); markers[index] = null; }
+      input.removeAttribute("aria-invalid");
+      removeMarker(index);
       return;
     }
 
@@ -746,52 +841,52 @@ showAllButton.addEventListener("click", () => {
       hasInvalidInput = true;
       status.textContent = "⚠️ Невірний формат координат";
       status.className = "card-status err";
-      if (markers[index]) { map.removeLayer(markers[index]); markers[index] = null; }
+      input.setAttribute("aria-invalid", "true");
+      removeMarker(index);
       return;
     }
 
-    if (markers[index]) { map.removeLayer(markers[index]); }
+    input.removeAttribute("aria-invalid");
+    removeMarker(index);
 
     markers[index] = L.marker(point, {
       icon: vehicleIcon(course, index),
       keyboard: true,
-      title: objectLabel(index)
-    })
-      .addTo(map)
-      .bindPopup(markerPopup(index, { lat: point[0], lng: point[1] }, course));
+      title: objectLabel(index),
+      alt: objectLabel(index)
+    }).addTo(map).bindPopup(
+      markerPopup(index, { lat: point[0], lng: point[1] }, course)
+    );
 
-    status.textContent = `✅ ${point[0].toFixed(5)}, ${point[1].toFixed(5)} | ${course}°`;
+    status.textContent =
+      `✅ ${point[0].toFixed(5)}, ${point[1].toFixed(5)} | ${course}°`;
     status.className = "card-status ok";
 
     bounds.push(point);
-    outputLines.push(`${objectLabel(index)}: ${point[0].toFixed(6)}, ${point[1].toFixed(6)} | Курс: ${course}°`);
-    anyShown = true;
   });
 
-  coordsOutput.textContent = outputLines.join("\n");
+  updateCoordsOutput();
+  updateScreenshotButton();
 
-  if (!anyShown) {
-    screenshotButton.disabled = true;
-    errorElement.textContent = "Введіть правильні координати хоча б для одного об’єкта.";
+  if (bounds.length === 0) {
+    errorElement.textContent =
+      "Введіть правильні координати хоча б для одного об’єкта.";
     return;
   }
 
   if (hasInvalidInput) {
-    errorElement.textContent = "Деякі координати мають невірний формат і не показані.";
+    errorElement.textContent =
+      "Деякі координати мають невірний формат і не показані.";
   }
+
+  map.invalidateSize();
 
   if (bounds.length === 1) {
     map.setView(bounds[0], 11);
   } else {
-    map.fitBounds(bounds, { padding: [70, 70], maxZoom: 14 });
+    map.fitBounds(bounds, { padding: [80, 80], maxZoom: 14 });
   }
-
-  map.invalidateSize();
-  screenshotButton.disabled = false;
 });
-
-const previewWrap = document.getElementById("preview-wrap");
-const previewImg = document.getElementById("preview-img");
 
 function canvasToBlob(canvas) {
   return new Promise((resolve, reject) => {
@@ -802,98 +897,169 @@ function canvasToBlob(canvas) {
   });
 }
 
+function waitForTiles(timeout = 7000) {
+  const layers = [osm, googleHybrid, darkLayer]
+    .filter(layer => map.hasLayer(layer));
+
+  return Promise.all(layers.map(layer => new Promise(resolve => {
+    if (!layer.isLoading()) {
+      resolve();
+      return;
+    }
+
+    let timer;
+
+    const finish = () => {
+      clearTimeout(timer);
+      layer.off("load", finish);
+      resolve();
+    };
+
+    layer.on("load", finish);
+    timer = setTimeout(finish, timeout);
+  })));
+}
+
+async function waitForMarkerImages() {
+  const images = Array.from(
+    document.querySelectorAll("#map .vehicle-symbol img")
+  );
+
+  await Promise.all(images.map(image => {
+    if (typeof image.decode === "function") {
+      return image.decode().catch(() => {});
+    }
+    return Promise.resolve();
+  }));
+}
+
 screenshotButton.addEventListener("click", async () => {
+  if (screenshotInProgress) return;
+
+  screenshotInProgress = true;
   screenshotButton.classList.add("loading");
-  screenshotButton.disabled = true;
-
-  errorElement.style.color = "#b42318";
+  updateScreenshotButton();
   errorElement.textContent = "";
-
   map.closePopup();
 
   try {
+    map.stop();
     map.invalidateSize();
-    await new Promise(resolve => setTimeout(resolve, 600));
 
-    const canvas = await html2canvas(document.getElementById("map-wrap"), {
-      useCORS: true,
-      allowTaint: false,
-      scale: Math.min(window.devicePixelRatio || 2, 3),
-      logging: false,
-      backgroundColor: "#1e1e1e"
-    });
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await waitForTiles();
+    await waitForMarkerImages();
 
-    screenshotBlob = await canvasToBlob(canvas);
+    const canvas = await html2canvas(
+      document.getElementById("map-wrap"),
+      {
+        useCORS: true,
+        allowTaint: false,
+        scale: Math.min(window.devicePixelRatio || 2, 3),
+        logging: false,
+        backgroundColor: "#1e1e1e"
+      }
+    );
 
-    if (previewObjectURL) URL.revokeObjectURL(previewObjectURL);
-    previewObjectURL = URL.createObjectURL(screenshotBlob);
+    const newBlob = await canvasToBlob(canvas);
+    const newURL = URL.createObjectURL(newBlob);
 
+    if (previewObjectURL) {
+      URL.revokeObjectURL(previewObjectURL);
+    }
+
+    screenshotBlob = newBlob;
+    previewObjectURL = newURL;
     previewImg.src = previewObjectURL;
     previewWrap.style.display = "block";
-    previewWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+    previewWrap.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
   } catch (error) {
-    errorElement.textContent = "Помилка створення скріншота: " + error.message;
+    errorElement.textContent =
+      "Помилка створення скріншота: " + error.message;
   } finally {
+    screenshotInProgress = false;
     screenshotButton.classList.remove("loading");
-    screenshotButton.disabled = false;
+    updateScreenshotButton();
   }
 });
 
 function createFileName() {
-  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
-  return `transport-map_${timestamp}.png`;
+  const timestamp = new Date().toISOString()
+    .slice(0, 19).replace(/[:T]/g, "-");
+
+  return `objects-map_${timestamp}.png`;
 }
 
-document.getElementById("btn-save").addEventListener("click", () => {
+function saveScreenshot() {
   if (!screenshotBlob) return;
+
   const downloadURL = URL.createObjectURL(screenshotBlob);
   const link = document.createElement("a");
+
   link.href = downloadURL;
   link.download = createFileName();
+
   document.body.appendChild(link);
   link.click();
   link.remove();
-  setTimeout(() => URL.revokeObjectURL(downloadURL), 1000);
-});
 
-document.getElementById("btn-share").addEventListener("click", async () => {
-  if (!screenshotBlob) return;
-  const file = new File([screenshotBlob], createFileName(), { type: "image/png" });
+  setTimeout(() => URL.revokeObjectURL(downloadURL), 60000);
+}
 
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+document.getElementById("btn-save")
+  .addEventListener("click", saveScreenshot);
+
+document.getElementById("btn-share")
+  .addEventListener("click", async () => {
+    if (!screenshotBlob) return;
+
+    const file = new File([screenshotBlob], createFileName(), {
+      type: "image/png"
+    });
+
     try {
-      await navigator.share({
-        title: "Об’єкти на карті",
-        text: "Карта розташування об’єктів: Герань, Ракета, Бандероль",
-        files: [file]
-      });
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
+        await navigator.share({
+          title: "Об’єкти на карті",
+          text: "Карта розташування об’єктів: Герань, Ракета, Бандероль",
+          files: [file]
+        });
+      } else {
+        saveScreenshot();
+
+        errorElement.textContent =
+          "Поширення файлів у цьому браузері недоступне. " +
+          "Зображення передано для завантаження.";
+      }
     } catch (error) {
       if (error.name !== "AbortError") {
-        errorElement.textContent = "Помилка поширення: " + error.message;
+        errorElement.textContent =
+          "Помилка поширення: " + error.message;
       }
     }
-    return;
-  }
-
-  const shareURL = URL.createObjectURL(screenshotBlob);
-  const openedWindow = window.open(shareURL, "_blank", "noopener");
-  if (!openedWindow) {
-    errorElement.textContent = "Браузер заблокував відкриття зображення. Скористайтеся кнопкою «Зберегти».";
-  }
-  setTimeout(() => URL.revokeObjectURL(shareURL), 60000);
-});
+  });
 
 document.getElementById("btn-close").addEventListener("click", () => {
   previewWrap.style.display = "none";
+  previewImg.removeAttribute("src");
+
   if (previewObjectURL) {
     URL.revokeObjectURL(previewObjectURL);
     previewObjectURL = null;
   }
-  previewImg.removeAttribute("src");
+
   screenshotBlob = null;
 });
 
-window.addEventListener("resize", () => { map.invalidateSize(); });
+window.addEventListener("resize", () => map.invalidateSize());
 </script>
 
 </body>
