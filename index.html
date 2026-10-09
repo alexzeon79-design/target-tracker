@@ -40,7 +40,6 @@
     display:flex; align-items:center; justify-content:center; gap:8px;
   }
   .btn-screenshot:disabled { opacity:.5; cursor:not-allowed; }
-  /* спінер всередині кнопки */
   .spinner {
     width:18px; height:18px; border:2px solid rgba(255,255,255,.3);
     border-top-color:white; border-radius:50%;
@@ -54,16 +53,14 @@
   #error { color:#b42318; font-size:14px; margin:10px 2px; min-height:20px; }
   #coords { font:14px ui-monospace,SFMono-Regular,Menlo,monospace; white-space:pre-line; margin:12px 2px; }
 
-  /* обгортка карти — потрібна для html2canvas */
   #map-wrap { position:relative; margin-top:14px; border-radius:14px; overflow:hidden; border:1px solid #d5dbe4; }
   #map { height:min(54vh,480px); min-height:300px; background:#1e1e1e; }
 
-  /* CSS-фільтр для створення темної карти без API-ключів */
+  /* CSS-фільтр для створення темної карти без API Key */
   .dark-tiles {
     filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
   }
 
-  /* превью скріншоту */
   #preview-wrap {
     display:none; margin-top:14px;
     border:1px solid #d5dbe4; border-radius:14px; overflow:hidden;
@@ -131,18 +128,15 @@
     <button class="secondary" id="open">🗺 Google Maps</button>
   </div>
 
-  <!-- обгортка карти -->
   <div id="map-wrap">
     <div id="map"></div>
   </div>
 
-  <!-- кнопка скріншоту -->
   <button class="btn-screenshot" id="screenshot" disabled>
     <div class="spinner"></div>
     <span class="btn-label">📸 Зробити скріншот карти</span>
   </button>
 
-  <!-- превью після скріншоту -->
   <div id="preview-wrap">
     <img id="preview-img" alt="Скріншот карти">
     <div id="preview-bar">
@@ -153,11 +147,9 @@
   </div>
 
 </main>
-<footer>Карта — OpenStreetMap / Esri. Для роботи потрібен інтернет.</footer>
+<footer>Карта — OpenStreetMap / Google. Для роботи потрібен інтернет.</footer>
 
-<!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- html2canvas -->
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
@@ -172,22 +164,14 @@ const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 });
 
-// 2. Гібридний супутник (Esri World Imagery + Назви міст та доріг)
-const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  maxZoom: 18,
+// 2. Інформативний Google Супутник + Назви українською
+const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=uk&x={x}&y={y}&z={z}', {
+  maxZoom: 20,
   crossOrigin: true,
-  attribution: 'Tiles &copy; Esri'
+  attribution: '&copy; Google Maps'
 });
 
-const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-  maxZoom: 18,
-  crossOrigin: true,
-  pane: 'overlayPane'
-});
-
-const hybridSatellite = L.layerGroup([esriSat, esriLabels]);
-
-// 3. Темна карта (Застосування CSS-фільтра на OSM без жодних API Key)
+// 3. Темна карта (CSS-фільтр на OSM без API-ключів)
 const darkLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   crossOrigin: true,
@@ -202,7 +186,7 @@ const map = L.map('map', {
 
 const baseMaps = {
   "🗺 Схема": osm,
-  "🛰 Супутник + Назви": hybridSatellite,
+  "🛰 Супутник + Назви (UA)": googleHybrid,
   "🌙 Темна": darkLayer
 };
 
@@ -332,12 +316,11 @@ document.getElementById('show').addEventListener('click', () => {
   document.getElementById('coords').textContent =
     `Широта:  ${point[0].toFixed(6)}\nДовгота: ${point[1].toFixed(6)}\nКурс:    ${currentCourse}°`;
 
-  // активуємо кнопку скріншоту
   document.getElementById('screenshot').disabled = false;
 });
 
 /* ══════════════════════════════════════
-   СКРІНШОТ — html2canvas
+   СКРІНШОТ
 ══════════════════════════════════════ */
 const screenshotBtn  = document.getElementById('screenshot');
 const previewWrap    = document.getElementById('preview-wrap');
@@ -399,7 +382,7 @@ document.getElementById('btn-save').addEventListener('click', () => {
 });
 
 /* ══════════════════════════════════════
-   ПОДІЛИТИСЬ — Web Share API
+   ПОДІЛИТИСЬ
 ══════════════════════════════════════ */
 document.getElementById('btn-share').addEventListener('click', async () => {
   const errEl = document.getElementById('error');
@@ -428,9 +411,6 @@ document.getElementById('btn-share').addEventListener('click', async () => {
   }
 });
 
-/* ══════════════════════════════════════
-   ЗАКРИТИ ПРЕВЬЮ
-══════════════════════════════════════ */
 document.getElementById('btn-close').addEventListener('click', () => {
   previewWrap.style.display = 'none';
   if (previewImg.src) {
