@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a1a2e">
+<title>Координати на карті</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f3f5f8; color:#17202a; }
+  header { background:#1a1a2e; color:white; padding:18px 16px 20px; }
+  h1 { font-size:23px; margin:0 0 6px; }
+  header p { margin:0; opacity:.92; font-size:14px; }
+  main { padding:14px; max-width:760px; margin:auto; }
+  label { display:block; font-weight:650; margin:0 0 8px; }
+  textarea { width:100%; min-height:68px; resize:vertical; border:1px solid #cbd2dc; border-radius:12px; padding:13px; font-size:17px; background:white; }
+  .hint { font-size:13px; color:#596575; margin:7px 2px 12px; line-height:1.4; }
+  .course-row {
+    display:flex; align-items:center; gap:10px;
+    background:white; border:1px solid #cbd2dc;
+    border-radius:12px; padding:10px 14px; margin-bottom:14px;
+  }
+  .course-row label { margin:0; white-space:nowrap; font-size:15px; }
+  .course-row input[type=number] {
+    width:90px; border:1px solid #cbd2dc; border-radius:8px;
+    padding:7px 10px; font-size:16px; background:#f8fafc;
+  }
+  .course-row input[type=range] { flex:1; accent-color:#c0392b; }
+  #course-deg { min-width:42px; text-align:right; font-weight:700; font-size:15px; color:#c0392b; }
+  .compass-wrap { width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  button { border:0; border-radius:12px; padding:13px 14px; font-size:16px; font-weight:650; cursor:pointer; transition:opacity .15s; }
+  button:active { opacity:.75; }
+  .primary { width:100%; background:#c0392b; color:white; }
+  .secondary { background:#fdecea; color:#7b1a1a; flex:1; }
+  .btn-screenshot {
+    width:100%; margin-top:10px;
+    background:#1a1a2e; color:white;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-screenshot:disabled { opacity:.5; cursor:not-allowed; }
+  /* спінер всередині кнопки */
+  .spinner {
+    width:18px; height:18px; border:2px solid rgba(255,255,255,.3);
+    border-top-color:white; border-radius:50%;
+    animation:spin .7s linear infinite; display:none;
+  }
+  .btn-screenshot.loading .spinner { display:block; }
+  .btn-screenshot.loading .btn-label { opacity:.7; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .actions { display:flex; gap:9px; margin-top:9px; }
+  #error { color:#b42318; font-size:14px; margin:10px 2px; min-height:20px; }
+  #coords { font:14px ui-monospace,SFMono-Regular,Menlo,monospace; white-space:pre-line; margin:12px 2px; }
+
+  /* обгортка карти — потрібна для html2canvas */
+  #map-wrap { position:relative; margin-top:14px; border-radius:14px; overflow:hidden; border:1px solid #d5dbe4; }
+  #map { height:min(54vh,480px); min-height:300px; }
+
+  /* превью скріншоту */
+  #preview-wrap {
+    display:none; margin-top:14px;
+    border:1px solid #d5dbe4; border-radius:14px; overflow:hidden;
+    position:relative;
+  }
+  #preview-wrap img { width:100%; display:block; }
+  #preview-bar {
+    display:flex; gap:8px; padding:10px;
+    background:rgba(26,26,46,.92); backdrop-filter:blur(6px);
+  }
+  #preview-bar button { flex:1; padding:10px; font-size:14px; border-radius:9px; }
+  .btn-save   { background:#22c55e; color:white; }
+  .btn-share  { background:#3b82f6; color:white; }
+  .btn-close  { background:#6b7280; color:white; }
+
+  footer { font-size:12px; color:#687386; text-align:center; padding:12px 8px 24px; }
+  @supports (padding: env(safe-area-inset-bottom)) {
+    footer { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎯 Трекер цілі</h1>
+  <p>Введи координати та курс — відобразимо на карті.</p>
+</header>
+<main>
+  <label for="input">Координати</label>
+  <textarea id="input"
+    placeholder="Наприклад: 48.123456, 32.654321"
+    autocapitalize="off" spellcheck="false"
+    aria-describedby="coords-hint"></textarea>
+  <div class="hint" id="coords-hint">
+    Формат: широта, довгота. Розділювач — кома, крапка з комою або пробіл.
+  </div>
+
+  <div class="course-row">
+    <label for="course-num">Курс</label>
+    <input type="number" id="course-num" min="0" max="359" value="0">
+    <input type="range"  id="course-range" min="0" max="359" value="0">
+    <span id="course-deg">0°</span>
+    <div class="compass-wrap" aria-hidden="true">
+      <svg id="mini-shahed" width="22" height="22" viewBox="0 0 100 100">
+        <g id="compass-g" transform="rotate(0,50,50)">
+          <polygon points="50,18 96,74 72,58 50,62 28,58 4,74"
+                   fill="#7a0000" stroke="#1a0000" stroke-width="2"/>
+          <polygon points="50,62 28,58 18,88 36,68"
+                   fill="#4a0000" stroke="#1a0000" stroke-width="1.5"/>
+          <polygon points="50,62 72,58 82,88 64,68"
+                   fill="#4a0000" stroke="#1a0000" stroke-width="1.5"/>
+          <polygon points="50,14 53,30 54,60 50,65 46,60 47,30"
+                   fill="#c01818" stroke="#1a0000" stroke-width="1"/>
+          <circle cx="50" cy="13" r="4" fill="#ff4444"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <button class="primary" id="show">Показати на карті</button>
+  <div id="error" role="alert" aria-live="assertive"></div>
+  <div id="coords" aria-live="polite"></div>
+
+  <div class="actions">
+    <button class="secondary" id="copy">📋 Копіювати</button>
+    <button class="secondary" id="open">🗺 Google Maps</button>
+  </div>
+
+  <!-- обгортка карти -->
+  <div id="map-wrap">
+    <div id="map"></div>
+  </div>
+
+  <!-- кнопка скріншоту -->
+  <button class="btn-screenshot" id="screenshot" disabled>
+    <div class="spinner"></div>
+    <span class="btn-label">📸 Зробити скріншот карти</span>
+  </button>
+
+  <!-- превью після скріншоту -->
+  <div id="preview-wrap">
+    <img id="preview-img" alt="Скріншот карти">
+    <div id="preview-bar">
+      <button class="btn-save"  id="btn-save">💾 Зберегти</button>
+      <button class="btn-share" id="btn-share">📤 Поділитись</button>
+      <button class="btn-close" id="btn-close">✕ Закрити</button>
+    </div>
+  </div>
+
+</main>
+<footer>Карта — OpenStreetMap / Esri. Для роботи потрібен інтернет.</footer>
+
+<!-- Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- html2canvas — рендерить DOM у canvas, включно з SVG-маркерами -->
+<script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+/* ══════════════════════════════════════
+   КАРТА ТА ШАРИ (БЕЗ API KEY ТА З НАЗВАМИ)
+══════════════════════════════════════ */
+
+// 1. Стандартна схема OSM
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  crossOrigin: true,
+  attribution: '&copy; OpenStreetMap contributors'
+});
+
+// 2. Гібридний супутник (Esri World Imagery + Прозорий шар з назвами міст та доріг)
+const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 18,
+  crossOrigin: true,
+  attribution: 'Tiles &copy; Esri'
+});
+
+const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 18,
+  crossOrigin: true,
+  pane: 'shadowPane' // розміщуємо підписи зверху супутника
+});
+
+const hybridSatellite = L.layerGroup([esriSat, esriLabels]);
+
+// 3. Безкоштовна темна карта (OpenStreetMap France Dark / CyclOSM / CartoDB CDN)
+const darkMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+  maxZoom: 19,
+  crossOrigin: true,
+  attribution: '&copy; OpenStreetMap contributors'
+});
+
+// Темна альтернатива без блокувань:
+const darkTheme = L.tileLayer('https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  crossOrigin: true,
+  attribution: '&copy; OpenStreetMap contributors'
+});
+
+// Робочий темний шар без ключів (Спеціальний CDN):
+const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  crossOrigin: true,
+  subdomains: 'abcd',
+  attribution: '&copy; OpenStreetMap &copy; CARTO'
+});
+
+const map = L.map('map', { 
+  zoomControl: true,
+  layers: [osm] 
+}).setView([48.5, 31.2], 6);
+
+const baseMaps = {
+  "🗺 Схема": osm,
+  "🛰 Супутник + Назви": hybridSatellite,
+  "🌙 Темна": darkLayer
+};
+
+L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+
+let marker         = null;
+let current        = null;
+let currentCourse = 0;
+let screenshotBlob = null;
+
+/* ══════════════════════════════════════
+   SVG SHAHED
+══════════════════════════════════════ */
+function buildShahedSVG(deg, size) {
+  return `
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="${size}" height="${size}" viewBox="0 0 100 100">
+  <g transform="rotate(${deg},50,50)">
+    <g transform="translate(2,3)" opacity="0.22">
+      <polygon points="50,18 96,74 72,58 50,62 28,58 4,74" fill="#000"/>
+      <polygon points="50,62 18,88 34,66" fill="#000"/>
+      <polygon points="50,62 82,88 66,66" fill="#000"/>
+    </g>
+    <polygon points="50,18 96,74 72,58 50,62 28,58 4,74"
+             fill="#7a0000" stroke="#1a0000" stroke-width="1.5" stroke-linejoin="round"/>
+    <polygon points="50,18 96,74 72,58" fill="#9b0000" stroke="none"/>
+    <polygon points="50,18 4,74 28,58"  fill="#9b0000" stroke="none"/>
+    <polygon points="50,62 28,58 18,88 36,68" fill="#4a0000" stroke="#1a0000" stroke-width="1.2"/>
+    <polygon points="50,62 72,58 82,88 64,68" fill="#4a0000" stroke="#1a0000" stroke-width="1.2"/>
+    <polygon points="50,14 53,30 54,60 50,65 46,60 47,30"
+             fill="#c01818" stroke="#1a0000" stroke-width="1"/>
+    <line x1="49" y1="18" x2="49" y2="55"
+          stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round"/>
+    <ellipse cx="50" cy="67" rx="5" ry="4" fill="#1a1a1a" stroke="#000" stroke-width="1"/>
+    <ellipse cx="50" cy="71" rx="4" ry="3" fill="#ff5500" opacity="0.95"/>
+    <ellipse cx="50" cy="73" rx="2.5" ry="2" fill="#ffaa00" opacity="0.7"/>
+    <polygon points="50,14 47,24 53,24" fill="#ff2222" stroke="#900" stroke-width="0.8"/>
+    <circle cx="50" cy="13" r="2.5" fill="#ff4444"/>
+    <circle cx="30" cy="52" r="1.2" fill="rgba(255,255,255,0.25)"/>
+    <circle cx="70" cy="52" r="1.2" fill="rgba(255,255,255,0.25)"/>
+    <circle cx="20" cy="65" r="1"   fill="rgba(255,255,255,0.2)"/>
+    <circle cx="80" cy="65" r="1"   fill="rgba(255,255,255,0.2)"/>
+  </g>
+</svg>`;
+}
+
+function shahedIcon(deg) {
+  const S = 18;
+  return L.divIcon({
+    html: buildShahedSVG(deg, S),
+    className: '',
+    iconSize:   [S, S],
+    iconAnchor: [S/2, S/2],
+    popupAnchor:[0, -S/2 + 4]
+  });
+}
+
+/* ══════════════════════════════════════
+   ПАРСИНГ
+══════════════════════════════════════ */
+function parseCoords(raw) {
+  const parts = raw.trim()
+    .replace(/[;\n\t]+/g, ' ')
+    .replace(/,/g, ' ')
+    .split(/\s+/).filter(Boolean);
+  if (parts.length !== 2) return null;
+  const lat = Number(parts[0]), lon = Number(parts[1]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  return [lat, lon];
+}
+
+/* ══════════════════════════════════════
+   КУРС
+══════════════════════════════════════ */
+const courseNum   = document.getElementById('course-num');
+const courseRange = document.getElementById('course-range');
+const courseDegEl = document.getElementById('course-deg');
+const compassG    = document.getElementById('compass-g');
+
+function setCourse(val) {
+  val = ((Math.round(val) % 360) + 360) % 360;
+  currentCourse = val;
+  courseNum.value = val;
+  courseRange.value = val;
+  courseDegEl.textContent = val + '°';
+  compassG.setAttribute('transform', `rotate(${val},50,50)`);
+  if (marker && current) marker.setIcon(shahedIcon(val));
+}
+
+courseNum.addEventListener('input',   () => setCourse(courseNum.value));
+courseRange.addEventListener('input', () => setCourse(courseRange.value));
+courseNum.addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp')   { e.preventDefault(); setCourse(currentCourse + 1); }
+  if (e.key === 'ArrowDown') { e.preventDefault(); setCourse(currentCourse - 1); }
+});
+
+/* ══════════════════════════════════════
+   ПОКАЗАТИ НА КАРТІ
+══════════════════════════════════════ */
+document.getElementById('show').addEventListener('click', () => {
+  const errEl = document.getElementById('error');
+  errEl.style.color = '#b42318';
+  errEl.textContent = '';
+
+  const point = parseCoords(document.getElementById('input').value);
+  if (!point) {
+    errEl.textContent = 'Не вдалося розпізнати координати. Введи два числа: широта, довгота.';
+    return;
+  }
+
+  current = point;
+  if (marker) map.removeLayer(marker);
+
+  marker = L.marker(point, { icon: shahedIcon(currentCourse) })
+    .addTo(map)
+    .bindPopup(`
+      <b>☠️ Shahed-136</b><br>
+      <code>${point[0].toFixed(6)}, ${point[1].toFixed(6)}</code><br>
+      Курс: <b>${currentCourse}°</b>
+    `)
+    .openPopup();
+
+  map.setView(point, 14);
+  map.invalidateSize();
+
+  document.getElementById('coords').textContent =
+    `Широта:  ${point[0].toFixed(6)}\nДовгота: ${point[1].toFixed(6)}\nКурс:    ${currentCourse}°`;
+
+  // активуємо кнопку скріншоту
+  document.getElementById('screenshot').disabled = false;
+});
+
+/* ══════════════════════════════════════
+   СКРІНШОТ — html2canvas
+══════════════════════════════════════ */
+const screenshotBtn  = document.getElementById('screenshot');
+const previewWrap    = document.getElementById('preview-wrap');
+const previewImg     = document.getElementById('preview-img');
+
+screenshotBtn.addEventListener('click', async () => {
+  screenshotBtn.classList.add('loading');
+  screenshotBtn.disabled = true;
+
+  const errEl = document.getElementById('error');
+  errEl.textContent = '';
+
+  try {
+    map.closePopup();
+    await new Promise(r => setTimeout(r, 600));
+
+    const mapEl = document.getElementById('map-wrap');
+
+    const canvas = await html2canvas(mapEl, {
+      useCORS: true,
+      allowTaint: false,
+      scale: window.devicePixelRatio || 2,
+      logging: false,
+      backgroundColor: '#e8e0d8'
+    });
+
+    canvas.toBlob(blob => {
+      screenshotBlob = blob;
+      const url = URL.createObjectURL(blob);
+      previewImg.src = url;
+      previewWrap.style.display = 'block';
+      previewWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 'image/png');
+
+  } catch (err) {
+    errEl.textContent = 'Не вдалося зробити скріншот: ' + err.message;
+  } finally {
+    screenshotBtn.classList.remove('loading');
+    screenshotBtn.disabled = false;
+  }
+});
+
+/* ══════════════════════════════════════
+   ЗБЕРЕГТИ — завантажити PNG
+══════════════════════════════════════ */
+document.getElementById('btn-save').addEventListener('click', () => {
+  if (!screenshotBlob) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(screenshotBlob);
+
+  const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  const name = current
+    ? `shahed_${current[0].toFixed(4)}_${current[1].toFixed(4)}_${currentCourse}deg_${ts}.png`
+    : `map_${ts}.png`;
+
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+/* ══════════════════════════════════════
+   ПОДІЛИТИСЬ — Web Share API
+══════════════════════════════════════ */
+document.getElementById('btn-share').addEventListener('click', async () => {
+  const errEl = document.getElementById('error');
+  if (!screenshotBlob) return;
+
+  const ts = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  const fileName = `shahed_${ts}.png`;
+  const file = new File([screenshotBlob], fileName, { type: 'image/png' });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: 'Shahed-136 — координати',
+        text: current
+          ? `${current[0].toFixed(6)}, ${current[1].toFixed(6)} | Курс: ${currentCourse}°`
+          : 'Карта',
+        files: [file]
+      });
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        errEl.textContent = 'Помилка при передачі: ' + e.message;
+      }
+    }
+  } else {
+    window.open(URL.createObjectURL(screenshotBlob), '_blank');
+  }
+});
+
+/* ══════════════════════════════════════
+   ЗАКРИТИ ПРЕВЬЮ
+══════════════════════════════════════ */
+document.getElementById('btn-close').addEventListener('click', () => {
+  previewWrap.style.display = 'none';
+  if (previewImg.src) {
+    URL.revokeObjectURL(previewImg.src);
+    previewImg.src = '';
+  }
+  screenshotBlob = null;
+});
+
+/* ══════════════════════════════════════
+   КОПІЮВАТИ / GOOGLE MAPS
+══════════════════════════════════════ */
+document.getElementById('copy').addEventListener('click', async () => {
+  const errEl = document.getElementById('error');
+  errEl.style.color = '#b42318';
+  if (!current) { errEl.textContent = 'Спочатку покажи точку на карті.'; return; }
+  const text = `${current[0].toFixed(6)}, ${current[1].toFixed(6)}`;
+  try {
+    await navigator.clipboard.writeText(text);
+    errEl.style.color = '#067647';
+    errEl.textContent = '✅ Координати скопійовано!';
+    setTimeout(() => { errEl.textContent = ''; errEl.style.color = '#b42318'; }, 2500);
+  } catch {
+    errEl.textContent = 'Скопіюй вручну: ' + text;
+  }
+});
+
+document.getElementById('open').addEventListener('click', () => {
+  const errEl = document.getElementById('error');
+  errEl.style.color = '#b42318';
+  if (!current) { errEl.textContent = 'Спочатку покажи точку на карті.'; return; }
+  const [lat, lon] = current;
+  window.open(
+    `https://www.google.com/maps?q=${lat},${lon}&ll=${lat},${lon}&z=14&bearing=${currentCourse}`,
+    '_blank', 'noopener'
+  );
+});
+
+document.getElementById('input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    document.getElementById('show').click();
+  }
+});
+</script>
+</body>
+</html>
