@@ -4,442 +4,415 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#172554">
-
-<title>Трекер об’єктів — Герань, Ракета, Бандероль</title>
+<title>Трекер об’єктів</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
-  :root {
-    color-scheme: light;
-    --map-icon-size: 22px;
-    --picker-icon-size: 18px;
-    --marker-circle-size: 38px;
-  }
+:root {
+  color-scheme: light;
+  --icon-size: 22px;
+  --circle-size: 32px;
+}
 
-  * { box-sizing: border-box; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #f3f5f8;
-    color: #17202a;
-  }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f3f5f8;
+  color: #17202a;
+}
 
-  header {
-    padding: 18px 16px 20px;
-    color: white;
-    background: #172554;
-  }
+header {
+  padding: 18px 16px;
+  color: white;
+  background: #172554;
+}
 
-  h1 { margin: 0 0 6px; font-size: 23px; }
+h1 { margin: 0 0 6px; font-size: 23px; }
+header p { margin: 0; font-size: 14px; line-height: 1.5; }
+main { max-width: 800px; margin: auto; padding: 14px; }
 
-  header p {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.5;
-    opacity: 0.92;
-  }
+button, select, textarea { font: inherit; }
 
-  main { max-width: 760px; margin: auto; padding: 14px; }
+button {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 600;
+}
 
-  .target-card {
-    margin-bottom: 12px;
-    padding: 14px;
-    background: white;
-    border: 1px solid #cbd2dc;
-    border-radius: 14px;
-  }
+button:disabled { opacity: .45; cursor: not-allowed; }
 
-  .target-card.placing {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1);
-  }
+button:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
 
-  .card-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 10px;
-    color: #172554;
-    font-size: 15px;
-    font-weight: 700;
-  }
+.secondary { background: #e2e8f0; color: #172554; }
+.add { background: #dcfce7; color: #166534; }
+.primary { background: #2563eb; color: white; }
+.danger { background: #fee2e2; color: #991b1b; }
 
-  .dot {
-    width: 10px;
-    height: 10px;
-    flex-shrink: 0;
-    background: #dc2626;
-    border-radius: 50%;
-  }
+.top-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
 
-  .target-card label {
-    display: block;
-    margin: 0 0 5px;
-    color: #596575;
-    font-size: 13px;
-    font-weight: 600;
-  }
+.top-tools button { font-size: 13px; }
+#count { flex: 1 1 180px; font-size: 13px; color: #596575; }
 
-  button {
-    padding: 12px 14px;
-    cursor: pointer;
-    border: 0;
-    border-radius: 12px;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 650;
-    transition: opacity 0.15s, transform 0.15s;
-  }
+.card {
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #cbd2dc;
+  border-radius: 12px;
+  overflow: hidden;
+}
 
-  button:active { opacity: 0.75; transform: scale(0.99); }
+.card.placing { border-color: #dc2626; }
 
-  button:focus-visible {
-    outline: 3px solid rgba(37, 99, 235, 0.4);
-    outline-offset: 2px;
-  }
+.card summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px;
+  cursor: pointer;
+  list-style: none;
+}
 
-  button:disabled { cursor: not-allowed; opacity: 0.45; }
+.card summary::-webkit-details-marker { display: none; }
+.card summary::after { content: "▾"; margin-left: 5px; color: #64748b; }
+.card[open] summary::after { content: "▴"; }
 
-  .icon-picker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 14px;
-  }
+.summary-icon { width: 20px; height: 20px; object-fit: contain; }
+.card-name { flex: 1; font-weight: 700; color: #172554; }
+.card-meta { font-size: 12px; color: #687386; }
+.card-body { padding: 0 12px 12px; }
 
-  .icon-option {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    flex: 1 1 90px;
-    min-height: 46px;
-    padding: 8px;
-    color: #596575;
-    background: #f8fafc;
-    border: 1px solid #cbd2dc;
-    border-radius: 9px;
-    font-size: 13px;
-  }
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
 
-  .icon-option[aria-pressed="true"] {
-    color: #991b1b;
-    background: #fef2f2;
-    border-color: #dc2626;
-  }
+.type-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1 1 90px;
+  min-height: 44px;
+  background: #f8fafc;
+  border: 1px solid #cbd2dc;
+  font-size: 13px;
+}
 
-  .icon-option img {
-    display: block;
-    width: var(--picker-icon-size);
-    height: var(--picker-icon-size);
-    flex-shrink: 0;
-    object-fit: contain;
-  }
+.type-button img { width: 18px; height: 18px; }
 
-  .coords-input {
-    width: 100%;
-    min-height: 52px;
-    padding: 9px 11px;
-    resize: vertical;
-    background: #f8fafc;
-    border: 1px solid #cbd2dc;
-    border-radius: 9px;
-    font-family: inherit;
-    font-size: 15px;
-  }
+.type-button[aria-pressed="true"] {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #dc2626;
+}
 
-  .coords-input:focus,
-  .course-num:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-  }
+.card label { display: block; font-size: 13px; margin-bottom: 5px; }
 
-  .btn-place {
-    width: 100%;
-    margin-top: 8px;
-    padding: 10px;
-    color: #172554;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 9px;
-    font-size: 14px;
-  }
+.coords {
+  width: 100%;
+  min-height: 48px;
+  padding: 9px;
+  resize: vertical;
+  border: 1px solid #cbd2dc;
+  border-radius: 8px;
+  background: #f8fafc;
+}
 
-  .btn-place[aria-pressed="true"] {
-    color: #991b1b;
-    background: #fef2f2;
-    border-color: #dc2626;
-  }
+.coords:focus { outline: 2px solid #93c5fd; }
 
-  .course-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-  }
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
 
-  .course-row label { margin: 0; white-space: nowrap; }
+.card-actions button { flex: 1; font-size: 13px; }
+.status { margin-top: 7px; font-size: 12px; color: #596575; }
+.status.err, #error { color: #b42318; }
+#empty { padding: 15px; text-align: center; color: #687386; }
 
-  .course-num {
-    width: 72px;
-    padding: 6px 8px;
-    background: #f8fafc;
-    border: 1px solid #cbd2dc;
-    border-radius: 8px;
-    font-size: 14px;
-  }
+body.cards-hidden #cards,
+body.cards-hidden #empty,
+body.cards-hidden #collapse-all,
+body.cards-hidden #expand-all {
+  display: none !important;
+}
 
-  .course-range {
-    min-width: 60px;
-    flex: 1;
-    accent-color: #2563eb;
-  }
+.note { color: #687386; font-size: 12px; line-height: 1.5; }
+#error { margin: 8px 0; font-size: 14px; min-height: 18px; }
 
-  .course-deg {
-    min-width: 38px;
-    color: #2563eb;
-    font-size: 14px;
-    font-weight: 700;
-    text-align: right;
-  }
+#coords-out {
+  white-space: pre-line;
+  font: 12px ui-monospace, monospace;
+  color: #475569;
+  max-height: 140px;
+  overflow: auto;
+}
 
-  .compass-wrap { width: 24px; height: 24px; flex-shrink: 0; }
+.output-details { margin-top: 10px; font-size: 13px; }
+.output-details summary { cursor: pointer; }
 
-  .card-status {
-    min-height: 16px;
-    margin-top: 7px;
-    font-size: 12px;
-  }
+#map-wrap {
+  position: relative;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #cbd2dc;
+  border-radius: 14px;
+  background: #17202a;
+}
 
-  .card-status.ok { color: #067647; }
-  .card-status.err { color: #b42318; }
+#map {
+  height: min(65vh, 580px);
+  min-height: 380px;
+  background: #17202a;
+}
 
-  .primary {
-    width: 100%;
-    margin-bottom: 10px;
-    color: white;
-    background: #2563eb;
-  }
+.dark-tiles {
+  filter: brightness(.6) invert(1) contrast(3)
+    hue-rotate(200deg) saturate(.3) brightness(.7);
+}
 
-  #error {
-    min-height: 18px;
-    margin: 8px 2px;
-    color: #b42318;
-    font-size: 14px;
-  }
+.map-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 9px;
+  background: #172554;
+  color: white;
+}
 
-  #coords-out {
-    margin: 8px 2px;
-    color: #374151;
-    font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    white-space: pre-line;
-  }
+.map-toolbar label { font-size: 13px; }
 
-  .direction-note {
-    margin: 7px 2px 10px;
-    color: #687386;
-    font-size: 12px;
-    line-height: 1.5;
-  }
+.map-toolbar select {
+  min-height: 38px;
+  padding: 6px;
+  border: 0;
+  border-radius: 7px;
+  background: white;
+  color: #17202a;
+}
 
-  .btn-screenshot {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    margin-top: 10px;
-    color: white;
-    background: #172554;
-  }
+.map-toolbar button { font-size: 13px; min-height: 38px; }
+#fullscreen { margin-left: auto; }
 
-  .spinner {
-    display: none;
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
+#map-hint {
+  padding: 9px 12px;
+  background: #fff1f2;
+  color: #991b1b;
+  font-size: 13px;
+  line-height: 1.4;
+}
 
-  .btn-screenshot.loading .spinner { display: block; }
+.popup-delete { width: 100%; margin-top: 10px; }
 
-  @keyframes spin { to { transform: rotate(360deg); } }
+.heading-icon {
+  background: none;
+  border: 0;
+  pointer-events: none;
+}
 
-  #placement-panel {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 12px;
-    padding: 10px 12px;
-    color: #991b1b;
-    background: #fff1f2;
-    border: 1px solid #fda4af;
-    border-radius: 10px;
-    font-size: 14px;
-    line-height: 1.4;
-  }
+.heading-marker {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  pointer-events: none;
+}
 
-  #placement-panel[hidden] { display: none; }
+.heading-direction {
+  position: absolute;
+  inset: 0;
+  transform-origin: 75px 75px;
+  pointer-events: none;
+}
 
-  #cancel-placement {
-    flex-shrink: 0;
-    padding: 9px;
-    color: white;
-    background: #b91c1c;
-    font-size: 13px;
-  }
+.heading-ray {
+  position: absolute;
+  top: 17px;
+  left: 74px;
+  width: 2px;
+  height: 58px;
+  border-left: 2px dashed #dc2626;
+}
 
-  #map-wrap {
-    position: relative;
-    margin-top: 12px;
-    overflow: hidden;
-    background: #1e1e1e;
-    border: 1px solid #d5dbe4;
-    border-radius: 14px;
-  }
+.vehicle-symbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--circle-size);
+  height: var(--circle-size);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(255,255,255,.38);
+  border: 1px solid rgba(220,38,38,.45);
+  box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 
-  #map {
-    height: min(54vh, 480px);
-    min-height: 300px;
-    background: #1e1e1e;
-  }
+.vehicle-symbol img {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
 
-  .dark-tiles {
-    filter: brightness(0.6) invert(1) contrast(3)
-      hue-rotate(200deg) saturate(0.3) brightness(0.7);
-  }
+.course-handle {
+  position: absolute;
+  top: -9px;
+  left: 57px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 
-  .heading-icon {
-    background: transparent;
-    border: 0;
-    pointer-events: none;
-  }
+.course-handle::before {
+  content: "";
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 16px solid #dc2626;
+  filter: drop-shadow(0 1px 2px #0005);
+}
 
-  .heading-marker {
-    position: relative;
-    width: 150px;
-    height: 150px;
-    pointer-events: none;
-  }
+#map.placing,
+#map.placing .leaflet-interactive {
+  cursor: crosshair;
+}
 
-  .heading-ray {
-    position: absolute;
-    top: 9px;
-    left: 74px;
-    width: 2px;
-    height: 66px;
-    border-left: 2px dashed #dc2626;
-    transform-origin: 1px bottom;
-  }
+#map.placing .vehicle-symbol,
+#map.placing .course-handle {
+  pointer-events: none;
+}
 
-  .heading-ray::before {
-    position: absolute;
-    top: -3px;
-    left: -6px;
-    width: 0;
-    height: 0;
-    content: "";
-    border-right: 5px solid transparent;
-    border-bottom: 9px solid #dc2626;
-    border-left: 5px solid transparent;
-  }
+#map.dragging,
+#map.dragging .vehicle-symbol,
+#map.dragging .course-handle {
+  cursor: grabbing;
+}
 
-  /* Напівпрозоре коло та іконка по центру */
-  .vehicle-symbol {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--marker-circle-size);
-    height: var(--marker-circle-size);
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.55);
-    border: 1px solid rgba(220, 38, 38, 0.65);
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
-    pointer-events: auto;
-    cursor: pointer;
-  }
+#map-wrap.capturing #map,
+#map-wrap.capturing #map * {
+  pointer-events: none !important;
+}
 
-  .vehicle-symbol img {
-    display: block;
-    width: var(--map-icon-size);
-    height: var(--map-icon-size);
-    object-fit: contain;
-    transform-origin: 50% 50%;
-  }
+/* Повноекранний режим */
+#map-wrap:fullscreen,
+#map-wrap.fullscreen-fallback {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #172554;
+}
 
-  #map.manual-placement,
-  #map.manual-placement .leaflet-interactive,
-  #map.manual-placement .vehicle-symbol {
-    cursor: crosshair;
-  }
+#map-wrap.fullscreen-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
 
-  /* У режимі вибору точки маркери не перехоплюють натискання */
-  #map.manual-placement .heading-icon,
-  #map.manual-placement .vehicle-symbol {
-    pointer-events: none;
-  }
+#map-wrap:fullscreen .map-toolbar,
+#map-wrap.fullscreen-fallback .map-toolbar {
+  flex-shrink: 0;
+  padding-top: calc(9px + env(safe-area-inset-top, 0px));
+  padding-left: calc(9px + env(safe-area-inset-left, 0px));
+  padding-right: calc(9px + env(safe-area-inset-right, 0px));
+}
 
-  #preview-wrap {
-    display: none;
-    margin-top: 14px;
-    overflow: hidden;
-    background: white;
-    border: 1px solid #d5dbe4;
-    border-radius: 14px;
-  }
+#map-wrap:fullscreen #map-hint,
+#map-wrap.fullscreen-fallback #map-hint {
+  flex-shrink: 0;
+}
 
-  #preview-img { display: block; width: 100%; }
+#map-wrap:fullscreen #map,
+#map-wrap.fullscreen-fallback #map {
+  flex: 1 1 0;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+}
 
-  #preview-bar {
-    display: flex;
-    gap: 8px;
-    padding: 10px;
-    background: #172554;
-  }
+#map-wrap::backdrop { background: #172554; }
+body.map-fullscreen-open { overflow: hidden; }
 
-  #preview-bar button {
-    flex: 1;
-    padding: 10px;
-    border-radius: 9px;
-    font-size: 14px;
-  }
+#preview {
+  margin-top: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+}
 
-  .btn-save { color: white; background: #16a34a; }
-  .btn-share { color: white; background: #2563eb; }
-  .btn-close { color: white; background: #6b7280; }
+#preview-img { display: block; width: 100%; }
 
+.preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: #172554;
+}
+
+.preview-actions button { flex: 1; }
+
+footer {
+  padding: 16px;
+  text-align: center;
+  color: #687386;
+  font-size: 12px;
+}
+
+@media (max-width: 480px) {
+  .card-meta { max-width: 110px; text-align: right; }
+  #fullscreen { margin-left: 0; }
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
   footer {
-    padding: 12px 8px 24px;
-    color: #687386;
-    font-size: 12px;
-    line-height: 1.5;
-    text-align: center;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
-
-  @media (max-width: 480px) {
-    .course-row { gap: 6px; }
-    .course-num { width: 64px; }
-    .course-deg { min-width: 34px; }
-    #preview-bar { flex-wrap: wrap; }
-    #preview-bar button { min-width: 100px; }
-  }
-
-  @supports (padding: env(safe-area-inset-bottom)) {
-    footer {
-      padding-bottom: calc(24px + env(safe-area-inset-bottom));
-    }
-  }
+}
 </style>
 </head>
 
@@ -447,57 +420,80 @@
 <header>
   <h1>Трекер об’єктів</h1>
   <p>
-    Оберіть тип об’єкта, введіть координати або вкажіть місце на карті.
+    Додавайте об’єкти на карті, перетягуйте іконки та змінюйте курс стрілкою.
   </p>
 </header>
 
 <main>
-  <div id="cards-container"></div>
+  <div class="top-tools">
+    <span id="count" role="status" aria-live="polite"></span>
+    <button id="collapse-all" class="secondary" type="button">Згорнути всі</button>
+    <button id="expand-all" class="secondary" type="button">Розгорнути всі</button>
+    <button id="toggle-cards" class="secondary" type="button"
+      aria-controls="cards" aria-expanded="true">Приховати картки</button>
+  </div>
 
-  <button class="primary" id="show-all" type="button">
-    📍 Показати об’єкти на карті
-  </button>
+  <div id="cards"></div>
+  <div id="empty" hidden>Об’єктів немає. Додайте картку або об’єкт на карті.</div>
 
-  <div id="error" role="alert" aria-live="assertive"></div>
-  <div id="coords-out" aria-live="polite"></div>
+  <div class="top-tools">
+    <button id="add-card" class="add" type="button">＋ Додати картку</button>
+    <button id="show-all" class="primary" type="button">📍 Показати за координатами</button>
+  </div>
 
-  <p class="direction-note">
-    Для ручного розміщення натисніть «Вказати на карті» в картці
-    потрібного об’єкта, потім натисніть на карту.
-    Для переміщення повторіть ці дії.<br>
-    Пунктир лише візуально показує курс: його довжина не відповідає
-    реальній відстані або прогнозу руху.
-    Курс 0° — північ, 90° — схід.
+  <p class="note">
+    <b>На карті:</b> оберіть тип → «＋ Додати» → натискайте на потрібні місця.
+    Після додавання натисніть «Готово».<br>
+    <b>Переміщення:</b> перетягуйте іконку або коло.
+    <b>Курс:</b> перетягуйте червону стрілку.
+    <b>Видалення:</b> натисніть на іконку та виберіть «Видалити об’єкт».<br>
+    <b>Клавіатура:</b> перейдіть до стрілки клавішею Tab.
+    Клавіші зі стрілками змінюють курс на 1°, із Shift — на 10°.<br>
+    Пунктир не відповідає реальній відстані або прогнозу руху.
+    0° — північ, 90° — схід.
   </p>
 
-  <button class="btn-screenshot" id="screenshot" type="button" disabled>
-    <span class="spinner" aria-hidden="true"></span>
-    <span>📸 Зробити скріншот карти</span>
-  </button>
-
-  <div id="placement-panel" hidden>
-    <span id="placement-message" role="status" aria-live="polite"></span>
-    <button id="cancel-placement" type="button">Скасувати</button>
-  </div>
+  <div id="error" role="alert"></div>
 
   <div id="map-wrap">
-    <div id="map" aria-label="Карта розташування об’єктів"></div>
+    <div class="map-toolbar">
+      <label for="map-type">Тип:</label>
+      <select id="map-type">
+        <option value="geran">Герань</option>
+        <option value="rocket">Ракета</option>
+        <option value="banderol">Бандероль</option>
+      </select>
+
+      <button id="map-add" class="add" type="button" aria-pressed="false">＋ Додати</button>
+      <button id="map-done" class="secondary" type="button" hidden>Готово</button>
+      <button id="fit-all" class="secondary" type="button">Показати всі</button>
+      <button id="screenshot" class="secondary" type="button" disabled>📸 Скріншот</button>
+      <button id="fullscreen" class="secondary" type="button"
+        aria-pressed="false">⛶ На весь екран</button>
+    </div>
+
+    <div id="map-hint" role="status" aria-live="polite" hidden></div>
+    <div id="map" aria-label="Карта об’єктів"></div>
   </div>
 
-  <div id="preview-wrap">
-    <img id="preview-img" alt="Попередній перегляд скріншота карти">
-    <div id="preview-bar">
-      <button class="btn-save" id="btn-save" type="button">💾 Зберегти</button>
-      <button class="btn-share" id="btn-share" type="button">📤 Поділитися</button>
-      <button class="btn-close" id="btn-close" type="button"
+  <details class="output-details">
+    <summary>Координати об’єктів на карті</summary>
+    <div id="coords-out"></div>
+  </details>
+
+  <div id="preview" hidden>
+    <img id="preview-img" alt="Скріншот карти">
+    <div class="preview-actions">
+      <button id="save" class="add" type="button">Зберегти</button>
+      <button id="share" class="primary" type="button">Поділитися</button>
+      <button id="close-preview" class="secondary" type="button"
         aria-label="Закрити попередній перегляд">✕</button>
     </div>
   </div>
 </main>
 
 <footer>
-  Карта — OpenStreetMap / Google.
-  Для завантаження карти потрібне підключення до інтернету.
+  Карта — OpenStreetMap / Google. Потрібне підключення до інтернету.
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -506,219 +502,103 @@
 <script>
 "use strict";
 
-const VEHICLE_COUNT = 3;
-const ICON_COLOR = "#dc2626";
+const $ = id => document.getElementById(id);
 
-// Вбудовані SVG-силуети: зовнішні файли іконок не потрібні.
-function createIconURL(path) {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg"
+const objects = new Map();
+let nextId = 1;
+let placement = null;
+let drag = null;
+let suppressClickUntil = 0;
+let busy = false;
+let screenshotBlob = null;
+let previewURL = null;
+let fullscreenTransition = false;
+let savedPageScroll = null;
+
+function iconURL(path) {
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg"
       width="64" height="64" viewBox="0 0 64 64">
-      <path fill="${ICON_COLOR}" d="${path}"/>
-    </svg>
-  `;
-  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+      <path fill="#dc2626" d="${path}"/>
+    </svg>`
+  );
 }
 
-const VEHICLE_TYPES = {
+const TYPES = {
   geran: {
     label: "Герань",
-    image: createIconURL(`
-      M32 3 C29.5 3 28.5 6 28 10
+    image: iconURL(`M32 3 C29.5 3 28.5 6 28 10
       L27 16 L4 48 L4 54 L23 46 L27 49 L27 54
       L22 58 L22 61 L30 58 L32 62 L34 58 L42 61
       L42 58 L37 54 L37 49 L41 46 L60 54 L60 48
-      L37 16 L36 10 C35.5 6 34.5 3 32 3 Z
-    `)
+      L37 16 L36 10 C35.5 6 34.5 3 32 3 Z`)
   },
   rocket: {
     label: "Ракета",
-    image: createIconURL(`
-      M32 3 C29.5 5 28.5 9 28.5 14
+    image: iconURL(`M32 3 C29.5 5 28.5 9 28.5 14
       L28.5 24 L10 34 L10 38 L28.5 32 L29 47
       L21 53 L21 56 L29 53 L30 61 L34 61 L35 53
       L43 56 L43 53 L35 47 L35.5 32 L54 38 L54 34
-      L35.5 24 L35.5 14 C35.5 9 34.5 5 32 3 Z
-    `)
+      L35.5 24 L35.5 14 C35.5 9 34.5 5 32 3 Z`)
   },
   banderol: {
     label: "Бандероль",
-    image: createIconURL(`
-      M32 3 C29 3 28 6 28 10
+    image: iconURL(`M32 3 C29 3 28 6 28 10
       L28 28 L8 33 L8 38 L28 35 L28 51 L22 53
       L22 57 L29 56 L29 61 L35 61 L35 56 L42 57
       L42 53 L36 51 L36 35 L56 38 L56 33 L36 28
-      L36 10 C36 6 35 3 32 3 Z
-    `)
+      L36 10 C36 6 35 3 32 3 Z`)
   }
 };
 
-function createCompassSVG() {
-  return `
-    <svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="50" cy="50" r="43" fill="#eff6ff"
-        stroke="#bfdbfe" stroke-width="5"></circle>
-      <g class="compass-g" transform="rotate(0,50,50)">
-        <polygon points="50,8 64,55 50,46 36,55"
-          fill="${ICON_COLOR}" stroke="#172554" stroke-width="3"
-          stroke-linejoin="round"></polygon>
-        <polygon points="50,92 36,55 50,64 64,55"
-          fill="#cbd5e1" stroke="#64748b" stroke-width="3"
-          stroke-linejoin="round"></polygon>
-      </g>
-      <circle cx="50" cy="50" r="5" fill="white"></circle>
-    </svg>
-  `;
-}
-
-function createCard(index) {
-  const number = index + 1;
-  const card = document.createElement("section");
-  card.className = "target-card";
-  card.dataset.course = "0";
-  card.dataset.type = "geran";
-
-  card.innerHTML = `
-    <div class="card-title">
-      <span class="dot" aria-hidden="true"></span>
-      <span class="object-name">Герань ${number}</span>
-    </div>
-
-    <div class="icon-picker" role="group"
-      aria-label="Тип об’єкта ${number}">
-      ${Object.entries(VEHICLE_TYPES).map(([type, definition]) => `
-        <button type="button" class="icon-option"
-          data-type="${type}" aria-pressed="${type === "geran"}">
-          <img src="${definition.image}" alt="" aria-hidden="true">
-          ${definition.label}
-        </button>
-      `).join("")}
-    </div>
-
-    <label for="coords-${number}">Координати</label>
-    <textarea id="coords-${number}" class="coords-input"
-      placeholder="48.123456, 32.654321"
-      autocapitalize="off" autocomplete="off" spellcheck="false"
-      aria-describedby="status-${number}"></textarea>
-
-    <button type="button" class="btn-place"
-      aria-pressed="false" aria-controls="map">
-      📍 Вказати на карті
-    </button>
-
-    <div class="course-row">
-      <label for="course-num-${number}">Курс</label>
-      <input id="course-num-${number}" type="number"
-        class="course-num" min="0" max="359" step="1"
-        value="0" inputmode="numeric">
-      <input type="range" class="course-range"
-        min="0" max="359" step="1" value="0"
-        aria-label="Курс об’єкта ${number}, градуси">
-      <span class="course-deg">0°</span>
-      <div class="compass-wrap">${createCompassSVG()}</div>
-    </div>
-
-    <div id="status-${number}" class="card-status"
-      aria-live="polite"></div>
-  `;
-  return card;
-}
-
-const cardsContainer = document.getElementById("cards-container");
-for (let i = 0; i < VEHICLE_COUNT; i++) {
-  cardsContainer.appendChild(createCard(i));
-}
-const cards = Array.from(document.querySelectorAll(".target-card"));
-
-const osmAttribution =
+const attribution =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const osm = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  { maxZoom: 19, crossOrigin: true, attribution: osmAttribution }
+  { maxZoom: 19, crossOrigin: true, attribution }
 );
 
-const googleHybrid = L.tileLayer(
+const satellite = L.tileLayer(
   "https://mt1.google.com/vt/lyrs=y&hl=uk&x={x}&y={y}&z={z}",
   { maxZoom: 20, crossOrigin: true, attribution: "&copy; Google Maps" }
 );
 
-const darkLayer = L.tileLayer(
+const dark = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   {
     maxZoom: 19,
     crossOrigin: true,
-    className: "dark-tiles",
-    attribution: osmAttribution
+    attribution,
+    className: "dark-tiles"
   }
 );
 
-const map = L.map("map", {
-  layers: [osm],
-  zoomControl: true
-}).setView([48.35, 32.25], 9);
+const map = L.map("map", { layers: [osm] })
+  .setView([48.35, 32.25], 9);
 
 L.control.layers({
   "🗺 Схема": osm,
-  "🛰 Супутник + Назви (UA)": googleHybrid,
-  "🌙 Темна": darkLayer
+  "🛰 Супутник": satellite,
+  "🌙 Темна": dark
 }, null, { position: "topright" }).addTo(map);
 
-const markers = new Array(VEHICLE_COUNT).fill(null);
-const showAllButton = document.getElementById("show-all");
-const screenshotButton = document.getElementById("screenshot");
-const errorElement = document.getElementById("error");
-const coordsOutput = document.getElementById("coords-out");
-const placementPanel = document.getElementById("placement-panel");
-const placementMessage = document.getElementById("placement-message");
-const previewWrap = document.getElementById("preview-wrap");
-const previewImg = document.getElementById("preview-img");
+const mapEl = map.getContainer();
+const mapWrap = $("map-wrap");
 
-let placementIndex = null;
-let screenshotInProgress = false;
-let screenshotBlob = null;
-let previewObjectURL = null;
+const nameOf = o => `${TYPES[o.type].label} ${o.id}`;
 
-function normalizeCourse(value) {
-  const number = Number(value);
-  return Number.isFinite(number)
-    ? ((Math.round(number) % 360) + 360) % 360
+function normalize(value) {
+  const n = Number(value);
+  return Number.isFinite(n)
+    ? ((Math.round(n) % 360) + 360) % 360
     : 0;
 }
 
-function objectLabel(index) {
-  return `${VEHICLE_TYPES[cards[index].dataset.type].label} ${index + 1}`;
-}
-
-function vehicleIcon(course, index) {
-  const heading = normalizeCourse(course);
-  const type = cards[index].dataset.type;
-
-  return L.divIcon({
-    html: `
-      <div class="heading-marker">
-        <div class="heading-ray" aria-hidden="true"
-          style="transform:rotate(${heading}deg);"></div>
-        <div class="vehicle-symbol">
-          <img src="${VEHICLE_TYPES[type].image}"
-            alt="" aria-hidden="true" draggable="false"
-            style="transform:rotate(${heading}deg);">
-        </div>
-      </div>
-    `,
-    className: "heading-icon",
-    iconSize: [150, 150],
-    iconAnchor: [75, 75],
-    popupAnchor: [0, -22]
-  });
-}
-
-function parseCoords(raw) {
-  const parts = raw.trim()
-    .replace(/[;\n\t]+/g, " ")
-    .replace(/,/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
+function parseCoords(text) {
+  const parts = text.trim()
+    .replace(/[;,\n\t]+/g, " ")
+    .split(/\s+/);
 
   if (parts.length !== 2) return null;
 
@@ -731,373 +611,956 @@ function parseCoords(raw) {
   return [lat, lng];
 }
 
-function markerPopup(index, point, course) {
-  return `
-    <b>${objectLabel(index)}</b><br>
-    <code>${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}</code><br>
-    Курс: <b>${course}°</b><br>
-    <small>Пунктир — візуальний покажчик напрямку</small>
-  `;
+function status(o, text, error = false) {
+  const element = o.card.querySelector(".status");
+  element.textContent = text;
+  element.className = "status" + (error ? " err" : "");
 }
 
-function setStatus(index, text, state = "") {
-  const status = cards[index].querySelector(".card-status");
-  status.textContent = text;
-  status.className = "card-status" + (state ? ` ${state}` : "");
-}
+function updateCard(o) {
+  o.card.querySelector(".card-name").textContent = nameOf(o);
+  o.card.querySelector(".summary-icon").src = TYPES[o.type].image;
+  o.card.querySelector(".card-meta").textContent =
+    o.marker ? `На карті · ${o.course}°` : "Не розміщено";
 
-function updateCoordsOutput() {
-  coordsOutput.textContent = markers.map((marker, index) => {
-    if (!marker) return null;
-    const point = marker.getLatLng();
-    const course = normalizeCourse(cards[index].dataset.course);
-    return `${objectLabel(index)}: ` +
-      `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)} | Курс: ${course}°`;
-  }).filter(Boolean).join("\n");
-}
+  if (!o.marker) return;
 
-function updateScreenshotButton() {
-  screenshotButton.disabled =
-    screenshotInProgress || !markers.some(Boolean);
-}
+  const p = o.marker.getLatLng().wrap();
+  const entered = parseCoords(o.card.querySelector(".coords").value);
 
-function refreshMarker(index) {
-  const marker = markers[index];
-  if (!marker) return;
-
-  const course = normalizeCourse(cards[index].dataset.course);
-  const point = marker.getLatLng();
-
-  marker.options.title = objectLabel(index);
-  marker.setIcon(vehicleIcon(course, index));
-  marker.setPopupContent(markerPopup(index, point, course));
-
-  const element = marker.getElement();
-  if (element) {
-    element.setAttribute("title", objectLabel(index));
-    element.setAttribute("aria-label", objectLabel(index));
-  }
-
-  // Не приховуємо повідомлення про ще не застосовані координати.
-  const input = cards[index].querySelector(".coords-input");
-  const entered = parseCoords(input.value);
   if (
     entered &&
-    Math.abs(entered[0] - point.lat) < 0.000001 &&
-    Math.abs(entered[1] - point.lng) < 0.000001
+    Math.abs(entered[0] - p.lat) < .000001 &&
+    Math.abs(entered[1] - p.lng) < .000001
   ) {
-    setStatus(index,
-      `✅ ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)} | ${course}°`,
-      "ok"
+    status(
+      o,
+      `✅ ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)} | Курс: ${o.course}°`
     );
   }
-  updateCoordsOutput();
 }
 
-function removeMarker(index) {
-  if (!markers[index]) return;
-  map.removeLayer(markers[index]);
-  markers[index] = null;
+function updateSummary() {
+  const placed = [...objects.values()].filter(o => o.marker);
+
+  $("count").textContent =
+    `Об’єктів: ${objects.size} · На карті: ${placed.length}`;
+
+  $("empty").hidden = objects.size > 0;
+  $("show-all").disabled = busy || !objects.size;
+  $("fit-all").disabled = busy || !placed.length;
+  $("screenshot").disabled = busy || !placed.length;
+
+  $("coords-out").textContent = placed.map(o => {
+    const p = o.marker.getLatLng().wrap();
+    return `${nameOf(o)}: ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)} | ${o.course}°`;
+  }).join("\n");
 }
 
-function placeMarker(index, point) {
-  const course = normalizeCourse(cards[index].dataset.course);
-  removeMarker(index);
+function createCard(o, open) {
+  const card = document.createElement("details");
+  card.className = "card";
+  card.open = open;
 
-  markers[index] = L.marker(point, {
-    icon: vehicleIcon(course, index),
-    keyboard: true,
-    title: objectLabel(index),
-    alt: objectLabel(index)
-  }).addTo(map).bindPopup(
-    markerPopup(index, L.latLng(point), course)
-  );
+  card.innerHTML = `
+    <summary>
+      <img class="summary-icon" src="${TYPES[o.type].image}" alt="">
+      <span class="card-name">${nameOf(o)}</span>
+      <span class="card-meta">Не розміщено</span>
+    </summary>
 
-  cards[index].querySelector(".coords-input")
-    .removeAttribute("aria-invalid");
+    <div class="card-body">
+      <div class="picker" role="group" aria-label="Тип об’єкта ${o.id}">
+        ${Object.entries(TYPES).map(([type, value]) => `
+          <button type="button" class="type-button" data-type="${type}"
+            aria-pressed="${type === o.type}">
+            <img src="${value.image}" alt="">${value.label}
+          </button>
+        `).join("")}
+      </div>
 
-  setStatus(index,
-    `✅ ${point[0].toFixed(5)}, ${point[1].toFixed(5)} | ${course}°`,
-    "ok"
-  );
-  updateCoordsOutput();
-  updateScreenshotButton();
-}
+      <label for="coords-${o.id}">Координати</label>
+      <textarea id="coords-${o.id}" class="coords"
+        placeholder="48.123456, 32.654321"
+        autocapitalize="off" autocomplete="off" spellcheck="false"
+        aria-describedby="status-${o.id}"></textarea>
 
-// Ручне розміщення
-function updatePlacementMessage() {
-  if (placementIndex === null) return;
-  placementMessage.textContent =
-    `${objectLabel(placementIndex)}: натисніть на потрібне місце карти.`;
-}
+      <div class="card-actions">
+        <button type="button" class="place secondary">
+          📍 Вказати на карті
+        </button>
+        <button type="button" class="delete danger">🗑 Видалити</button>
+      </div>
 
-function stopManualPlacement() {
-  placementIndex = null;
-  map.getContainer().classList.remove("manual-placement");
-  placementPanel.hidden = true;
-  placementMessage.textContent = "";
+      <div id="status-${o.id}" class="status" aria-live="polite"></div>
+    </div>
+  `;
 
-  cards.forEach(card => {
-    card.classList.remove("placing");
-    const button = card.querySelector(".btn-place");
-    button.textContent = "📍 Вказати на карті";
-    button.setAttribute("aria-pressed", "false");
-  });
-}
+  card.querySelector(".delete").onclick = () => deleteObject(o.id);
 
-function startManualPlacement(index) {
-  const wasSelected = placementIndex === index;
-  stopManualPlacement();
-  if (wasSelected) return;
+  card.querySelector(".place").onclick = () => {
+    if (busy) return;
 
-  placementIndex = index;
-  map.closePopup();
-  errorElement.textContent = "";
+    const same = placement?.mode === "existing" && placement.id === o.id;
+    stopPlacement();
 
-  cards[index].classList.add("placing");
-  const button = cards[index].querySelector(".btn-place");
-  button.textContent = "✕ Скасувати вибір точки";
-  button.setAttribute("aria-pressed", "true");
+    if (!same) {
+      startPlacement({ mode: "existing", id: o.id }, true);
+    }
+  };
 
-  map.getContainer().classList.add("manual-placement");
-  placementPanel.hidden = false;
-  updatePlacementMessage();
+  card.querySelectorAll(".type-button").forEach(button => {
+    button.onclick = () => {
+      if (busy) return;
+      finishDrag();
 
-  map.invalidateSize();
-  placementPanel.scrollIntoView({ behavior: "smooth", block: "start" });
-}
+      o.type = button.dataset.type;
 
-map.on("click", event => {
-  if (placementIndex === null || screenshotInProgress) return;
-
-  const index = placementIndex;
-  const point = event.latlng.wrap();
-  const lat = Number(point.lat.toFixed(6));
-  const lng = Number(point.lng.toFixed(6));
-
-  cards[index].querySelector(".coords-input").value =
-    `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-
-  placeMarker(index, [lat, lng]);
-  stopManualPlacement();
-});
-
-document.getElementById("cancel-placement")
-  .addEventListener("click", stopManualPlacement);
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") stopManualPlacement();
-});
-
-cards.forEach((card, index) => {
-  const numEl = card.querySelector(".course-num");
-  const rangeEl = card.querySelector(".course-range");
-  const degEl = card.querySelector(".course-deg");
-  const compassG = card.querySelector(".compass-g");
-  const coordsInput = card.querySelector(".coords-input");
-
-  card.querySelector(".btn-place").addEventListener("click", () => {
-    startManualPlacement(index);
-  });
-
-  card.querySelectorAll(".icon-option").forEach(button => {
-    button.addEventListener("click", () => {
-      card.dataset.type = button.dataset.type;
-      card.querySelector(".object-name").textContent = objectLabel(index);
-
-      card.querySelectorAll(".icon-option").forEach(option => {
-        option.setAttribute("aria-pressed", String(option === button));
+      card.querySelectorAll(".type-button").forEach(b => {
+        b.setAttribute("aria-pressed", String(b === button));
       });
 
-      refreshMarker(index);
-      updatePlacementMessage();
-    });
+      if (o.marker) {
+        o.marker.options.title = nameOf(o);
+        o.marker.setIcon(markerIcon(o));
+
+        const element = o.marker.getElement();
+        if (element) {
+          element.setAttribute("title", nameOf(o));
+          element.setAttribute("aria-label", nameOf(o));
+        }
+
+        refreshPopup(o);
+      }
+
+      updateCard(o);
+      updateSummary();
+      updateHint();
+    };
   });
 
-  function setCourse(value) {
-    const course = normalizeCourse(value);
-    card.dataset.course = String(course);
-    numEl.value = String(course);
-    rangeEl.value = String(course);
-    degEl.textContent = `${course}°`;
-    compassG.setAttribute("transform", `rotate(${course},50,50)`);
-    refreshMarker(index);
-  }
+  const input = card.querySelector(".coords");
 
-  numEl.addEventListener("input", () => {
-    if (numEl.value !== "") setCourse(numEl.value);
-  });
-  numEl.addEventListener("change", () => setCourse(numEl.value));
-  rangeEl.addEventListener("input", () => setCourse(rangeEl.value));
+  input.oninput = () => {
+    input.removeAttribute("aria-invalid");
+    status(o, "Натисніть «Показати за координатами», щоб застосувати.");
+  };
 
-  coordsInput.addEventListener("input", () => {
-    coordsInput.removeAttribute("aria-invalid");
-    setStatus(index, "Натисніть «Показати об’єкти на карті», щоб застосувати.");
-  });
-
-  coordsInput.addEventListener("keydown", event => {
+  input.onkeydown = event => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      showAllButton.click();
+      $("show-all").click();
     }
+  };
+
+  return card;
+}
+
+function addObject(type = "geran", open = false, point = null) {
+  if (busy) return null;
+
+  const o = {
+    id: nextId++,
+    type,
+    course: 0,
+    marker: null,
+    card: null
+  };
+
+  o.card = createCard(o, open);
+  objects.set(o.id, o);
+  $("cards").appendChild(o.card);
+
+  if (point) {
+    o.card.querySelector(".coords").value =
+      `${point[0].toFixed(6)}, ${point[1].toFixed(6)}`;
+    placeMarker(o, point);
+  }
+
+  updateSummary();
+  return o;
+}
+
+function deleteObject(id) {
+  if (busy) return;
+
+  const o = objects.get(id);
+  if (!o) return;
+
+  finishDrag();
+
+  if (placement?.id === id) stopPlacement();
+  if (o.marker) map.removeLayer(o.marker);
+
+  o.card.remove();
+  objects.delete(id);
+  updateSummary();
+}
+
+function markerIcon(o) {
+  return L.divIcon({
+    className: "heading-icon",
+    iconSize: [150, 150],
+    iconAnchor: [75, 75],
+    popupAnchor: [0, -22],
+
+    html: `
+      <div class="heading-marker">
+        <div class="heading-direction"
+          style="transform:rotate(${o.course}deg)">
+          <div class="heading-ray" aria-hidden="true"></div>
+          <button type="button" class="course-handle" data-id="${o.id}"
+            aria-label="Курс ${nameOf(o)}: ${o.course}°"
+            title="Перетягніть для зміни курсу"></button>
+        </div>
+
+        <div class="vehicle-symbol" data-id="${o.id}"
+          title="Перетягніть або натисніть для інформації">
+          <img src="${TYPES[o.type].image}" alt="" draggable="false"
+            style="transform:rotate(${o.course}deg)">
+        </div>
+      </div>
+    `
   });
+}
+
+function popupContent(o) {
+  const p = o.marker.getLatLng().wrap();
+  const box = document.createElement("div");
+
+  const title = document.createElement("strong");
+  title.textContent = nameOf(o);
+
+  const info = document.createElement("div");
+  info.textContent =
+    `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)} · Курс: ${o.course}°`;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "danger popup-delete";
+  button.textContent = "🗑 Видалити об’єкт";
+
+  button.onclick = event => {
+    event.stopPropagation();
+    deleteObject(o.id);
+  };
+
+  box.append(title, info, button);
+  return box;
+}
+
+function refreshPopup(o) {
+  if (o.marker) o.marker.setPopupContent(popupContent(o));
+}
+
+function placeMarker(o, point) {
+  if (o.marker) {
+    o.marker.setLatLng(point);
+  } else {
+    o.marker = L.marker(point, {
+      icon: markerIcon(o),
+      title: nameOf(o),
+      keyboard: true
+    }).addTo(map);
+
+    o.marker.bindPopup(popupContent(o));
+  }
+
+  o.card.querySelector(".coords").removeAttribute("aria-invalid");
+  refreshPopup(o);
+  updateCard(o);
+}
+
+function syncCoords(o) {
+  const p = o.marker.getLatLng().wrap();
+  const input = o.card.querySelector(".coords");
+
+  input.value = `${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`;
+  input.removeAttribute("aria-invalid");
+
+  updateCard(o);
+  updateSummary();
+}
+
+function setCourse(o, value) {
+  o.course = normalize(value);
+
+  const el = o.marker?.getElement();
+
+  if (el) {
+    el.querySelector(".heading-direction").style.transform =
+      `rotate(${o.course}deg)`;
+
+    el.querySelector(".vehicle-symbol img").style.transform =
+      `rotate(${o.course}deg)`;
+
+    el.querySelector(".course-handle").setAttribute(
+      "aria-label",
+      `Курс ${nameOf(o)}: ${o.course}°`
+    );
+  }
+
+  updateCard(o);
+  updateSummary();
+}
+
+// Приховування та згортання карток.
+function setCardsHidden(hidden) {
+  document.body.classList.toggle("cards-hidden", hidden);
+
+  $("toggle-cards").textContent = hidden
+    ? "Показати картки"
+    : "Приховати картки";
+
+  $("toggle-cards").setAttribute("aria-expanded", String(!hidden));
+}
+
+$("toggle-cards").onclick = () => {
+  setCardsHidden(!document.body.classList.contains("cards-hidden"));
+};
+
+$("collapse-all").onclick = () => {
+  objects.forEach(o => { o.card.open = false; });
+};
+
+$("expand-all").onclick = () => {
+  objects.forEach(o => { o.card.open = true; });
+};
+
+$("add-card").onclick = () => {
+  if (busy) return;
+
+  finishDrag();
+  setCardsHidden(false);
+
+  const o = addObject("geran", true);
+  if (!o) return;
+
+  o.card.querySelector(".coords").focus({ preventScroll: true });
+  o.card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+};
+
+// Додавання та розміщення безпосередньо на карті.
+function updateHint() {
+  if (!placement) return;
+
+  if (placement.mode === "new") {
+    $("map-hint").textContent =
+      `Додавання: ${TYPES[$("map-type").value].label}. ` +
+      "Натискайте на карту для створення об’єктів. Після завершення — «Готово».";
+  } else {
+    const o = objects.get(placement.id);
+    $("map-hint").textContent = o
+      ? `${nameOf(o)}: натисніть на потрібне місце карти.`
+      : "";
+  }
+}
+
+function stopPlacement() {
+  placement = null;
+  mapEl.classList.remove("placing");
+  $("map-hint").hidden = true;
+  $("map-done").hidden = true;
+  $("map-add").setAttribute("aria-pressed", "false");
+
+  objects.forEach(o => {
+    o.card.classList.remove("placing");
+    o.card.querySelector(".place").textContent = "📍 Вказати на карті";
+  });
+
+  refreshMapSize();
+}
+
+function startPlacement(value, scroll = false) {
+  if (busy) return;
+
+  finishDrag();
+  stopPlacement();
+  placement = value;
+  map.closePopup();
+
+  mapEl.classList.add("placing");
+  $("map-hint").hidden = false;
+  $("map-done").hidden = false;
+  $("map-add").setAttribute("aria-pressed", String(value.mode === "new"));
+
+  if (value.mode === "existing") {
+    const o = objects.get(value.id);
+    if (o) {
+      o.card.classList.add("placing");
+      o.card.querySelector(".place").textContent = "✕ Скасувати";
+    }
+  }
+
+  updateHint();
+  refreshMapSize();
+
+  if (scroll && !isMapFullscreen()) {
+    mapWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+$("map-add").onclick = () => {
+  if (busy) return;
+
+  if (placement?.mode === "new") {
+    stopPlacement();
+  } else {
+    startPlacement({ mode: "new" });
+  }
+};
+
+$("map-done").onclick = stopPlacement;
+$("map-type").onchange = updateHint;
+
+map.on("click", event => {
+  if (
+    !placement ||
+    busy ||
+    drag ||
+    performance.now() < suppressClickUntil
+  ) return;
+
+  const p = event.latlng.wrap();
+  const point = [
+    Number(p.lat.toFixed(6)),
+    Number(p.lng.toFixed(6))
+  ];
+
+  if (placement.mode === "new") {
+    addObject($("map-type").value, false, point);
+  } else {
+    const o = objects.get(placement.id);
+
+    if (o) {
+      o.card.querySelector(".coords").value =
+        `${point[0].toFixed(6)}, ${point[1].toFixed(6)}`;
+
+      placeMarker(o, point);
+      o.card.open = false;
+    }
+
+    stopPlacement();
+    updateSummary();
+  }
 });
 
-showAllButton.addEventListener("click", () => {
-  stopManualPlacement();
-  errorElement.textContent = "";
+// Перетягування іконки та стрілки.
+function pauseHandlers() {
+  const handlers = [
+    map.dragging,
+    map.touchZoom,
+    map.doubleClickZoom,
+    map.scrollWheelZoom,
+    map.boxZoom,
+    map.keyboard
+  ].filter(handler => handler?.enabled());
 
-  const bounds = [];
-  let hasInvalidInput = false;
+  handlers.forEach(handler => handler.disable());
+  return handlers;
+}
 
-  cards.forEach((card, index) => {
-    const input = card.querySelector(".coords-input");
-    const raw = input.value.trim();
+function updateDrag(event) {
+  if (!drag) return;
 
-    if (!raw) {
-      removeMarker(index);
-      setStatus(index, "");
-      input.removeAttribute("aria-invalid");
-      return;
+  const o = objects.get(drag.id);
+  if (!o?.marker) return;
+
+  const pointer = map.mouseEventToContainerPoint(event);
+
+  if (!drag.moved) {
+    if (pointer.distanceTo(drag.start) < 3) return;
+    drag.moved = true;
+    o.marker.closePopup();
+  }
+
+  if (drag.mode === "position") {
+    const position = map.containerPointToLatLng(
+      pointer.subtract(drag.offset)
+    );
+
+    o.marker.setLatLng(position);
+    syncCoords(o);
+  } else {
+    const center = map.latLngToContainerPoint(o.marker.getLatLng());
+    const dx = pointer.x - center.x;
+    const dy = pointer.y - center.y;
+
+    if (Math.hypot(dx, dy) >= 10) {
+      setCourse(o, Math.atan2(dx, -dy) * 180 / Math.PI);
     }
+  }
+}
 
-    const point = parseCoords(raw);
+function finishDrag(click = false) {
+  if (!drag) return;
 
-    if (!point) {
-      hasInvalidInput = true;
-      removeMarker(index);
-      input.setAttribute("aria-invalid", "true");
-      setStatus(index, "⚠️ Невірний формат координат", "err");
-      return;
+  const previous = drag;
+  drag = null;
+
+  mapEl.classList.remove("dragging");
+
+  if (mapEl.hasPointerCapture(previous.pointerId)) {
+    mapEl.releasePointerCapture(previous.pointerId);
+  }
+
+  previous.handlers.forEach(handler => handler.enable());
+
+  const o = objects.get(previous.id);
+
+  if (o?.marker) {
+    refreshPopup(o);
+
+    if (
+      click &&
+      previous.mode === "position" &&
+      !previous.moved
+    ) {
+      o.marker.togglePopup();
     }
+  }
 
-    placeMarker(index, point);
-    bounds.push(point);
-  });
+  suppressClickUntil = performance.now() + 300;
+}
 
-  updateCoordsOutput();
-  updateScreenshotButton();
-
-  if (!bounds.length) {
-    errorElement.textContent =
-      "Введіть правильні координати або скористайтеся ручним розміщенням.";
+mapEl.addEventListener("pointerdown", event => {
+  if (busy || drag) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
     return;
   }
 
-  if (hasInvalidInput) {
-    errorElement.textContent =
-      "Деякі координати мають невірний формат і не показані.";
-  }
+  const handle = event.target.closest(".course-handle");
+  const target = handle || event.target.closest(".vehicle-symbol");
 
-  map.invalidateSize();
-  if (bounds.length === 1) {
-    map.setView(bounds[0], 11);
-  } else {
-    map.fitBounds(bounds, { padding: [80, 80], maxZoom: 14 });
-  }
+  if (!target || placement) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  if (!event.isPrimary || event.button !== 0) return;
+
+  const o = objects.get(Number(target.dataset.id));
+  if (!o?.marker) return;
+
+  map.stop();
+
+  const pointer = map.mouseEventToContainerPoint(event);
+  const center = map.latLngToContainerPoint(o.marker.getLatLng());
+
+  drag = {
+    id: o.id,
+    mode: handle ? "course" : "position",
+    pointerId: event.pointerId,
+    start: pointer,
+    offset: pointer.subtract(center),
+    moved: false,
+    handlers: pauseHandlers()
+  };
+
+  mapEl.classList.add("dragging");
+  mapEl.setPointerCapture(event.pointerId);
+}, { capture: true, passive: false });
+
+mapEl.addEventListener("pointermove", event => {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  updateDrag(event);
+}, { capture: true, passive: false });
+
+mapEl.addEventListener("pointerup", event => {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  updateDrag(event);
+  finishDrag(true);
+}, { capture: true, passive: false });
+
+["pointercancel", "lostpointercapture"].forEach(type => {
+  mapEl.addEventListener(type, event => {
+    if (drag && event.pointerId === drag.pointerId) {
+      finishDrag();
+    }
+  }, true);
 });
 
-// Скріншот, збереження та поширення
-function canvasToBlob(canvas) {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => {
-      if (blob) resolve(blob);
-      else reject(new Error("Не вдалося створити PNG-зображення."));
-    }, "image/png");
-  });
+["click", "dblclick", "mousedown", "touchstart"].forEach(type => {
+  mapEl.addEventListener(type, event => {
+    const target = event.target.closest(
+      ".course-handle, .vehicle-symbol"
+    );
+
+    if (
+      busy ||
+      drag ||
+      performance.now() < suppressClickUntil ||
+      (!placement && target)
+    ) {
+      if (event.cancelable) event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, { capture: true, passive: false });
+});
+
+mapEl.addEventListener("keydown", event => {
+  const handle = event.target.closest(".course-handle");
+  if (!handle) return;
+
+  const steps = {
+    ArrowLeft: -1,
+    ArrowDown: -1,
+    ArrowRight: 1,
+    ArrowUp: 1
+  };
+
+  if (!(event.key in steps)) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  if (busy || drag || placement) return;
+
+  const o = objects.get(Number(handle.dataset.id));
+
+  if (o) {
+    setCourse(
+      o,
+      o.course + steps[event.key] * (event.shiftKey ? 10 : 1)
+    );
+    refreshPopup(o);
+  }
+}, true);
+
+window.addEventListener("blur", () => finishDrag());
+
+// Масштабування та застосування координат.
+function fitAll() {
+  if (busy) return;
+  finishDrag();
+
+  const points = [...objects.values()]
+    .filter(o => o.marker)
+    .map(o => o.marker.getLatLng());
+
+  if (!points.length) return;
+
+  map.invalidateSize();
+
+  if (points.length === 1) {
+    map.setView(points[0], 11);
+  } else {
+    map.fitBounds(points, { padding: [90, 90], maxZoom: 14 });
+  }
 }
 
-function waitForTiles(timeout = 7000) {
-  const layers = [osm, googleHybrid, darkLayer]
-    .filter(layer => map.hasLayer(layer));
+$("fit-all").onclick = fitAll;
 
-  return Promise.all(layers.map(layer => new Promise(resolve => {
-    if (!layer.isLoading()) {
-      resolve();
+$("show-all").onclick = () => {
+  if (busy) return;
+
+  finishDrag();
+  stopPlacement();
+
+  let invalid = false;
+  let placed = 0;
+
+  objects.forEach(o => {
+    const input = o.card.querySelector(".coords");
+    const raw = input.value.trim();
+    const point = parseCoords(raw);
+
+    if (!raw || !point) {
+      if (o.marker) map.removeLayer(o.marker);
+      o.marker = null;
+
+      if (raw) {
+        invalid = true;
+        input.setAttribute("aria-invalid", "true");
+        o.card.open = true;
+        status(o, "Невірний формат координат.", true);
+      } else {
+        input.removeAttribute("aria-invalid");
+        status(o, "");
+      }
+
+      updateCard(o);
       return;
     }
 
-    let timer;
-    const finish = () => {
-      clearTimeout(timer);
-      layer.off("load", finish);
-      resolve();
-    };
-    layer.on("load", finish);
-    timer = setTimeout(finish, timeout);
-  })));
-}
+    placeMarker(o, point);
+    placed++;
+  });
 
-async function waitForMarkerImages() {
-  const images = Array.from(
-    document.querySelectorAll("#map .vehicle-symbol img")
+  if (invalid) {
+    setCardsHidden(false);
+    $("error").textContent =
+      "Деякі координати некоректні. Перевірте відкриті картки.";
+  } else if (!placed) {
+    $("error").textContent =
+      "Введіть координати або додайте об’єкти безпосередньо на карті.";
+  } else {
+    $("error").textContent = "";
+  }
+
+  updateSummary();
+  fitAll();
+};
+
+// Повноекранний режим із резервним режимом для браузерів без Fullscreen API.
+function isMapFullscreen() {
+  return (
+    document.fullscreenElement === mapWrap ||
+    mapWrap.classList.contains("fullscreen-fallback")
   );
-  await Promise.all(images.map(image => {
-    return typeof image.decode === "function"
-      ? image.decode().catch(() => {})
-      : Promise.resolve();
-  }));
 }
 
-screenshotButton.addEventListener("click", async () => {
-  if (screenshotInProgress) return;
+function refreshMapSize() {
+  requestAnimationFrame(() => {
+    map.invalidateSize({ pan: false });
+  });
+}
 
-  stopManualPlacement();
-  screenshotInProgress = true;
-  screenshotButton.classList.add("loading");
-  updateScreenshotButton();
-  errorElement.textContent = "";
+function syncFullscreenUI() {
+  const active = isMapFullscreen();
+
+  document.body.classList.toggle("map-fullscreen-open", active);
+
+  $("fullscreen").textContent = active
+    ? "✕ Вийти з екрана"
+    : "⛶ На весь екран";
+
+  $("fullscreen").setAttribute("aria-pressed", String(active));
+
+  if (!active && savedPageScroll !== null) {
+    const position = savedPageScroll;
+    savedPageScroll = null;
+    window.scrollTo(position.x, position.y);
+  }
+
+  refreshMapSize();
+  setTimeout(refreshMapSize, 250);
+}
+
+async function enterMapFullscreen() {
+  finishDrag();
+
+  savedPageScroll = {
+    x: window.scrollX,
+    y: window.scrollY
+  };
+
+  if (
+    document.fullscreenEnabled &&
+    typeof mapWrap.requestFullscreen === "function"
+  ) {
+    try {
+      await mapWrap.requestFullscreen();
+      syncFullscreenUI();
+      return;
+    } catch {
+      // Резервне розгортання на всю видиму область сторінки.
+    }
+  }
+
+  mapWrap.classList.add("fullscreen-fallback");
+  syncFullscreenUI();
+}
+
+async function exitMapFullscreen() {
+  finishDrag();
+
+  if (document.fullscreenElement === mapWrap) {
+    await document.exitFullscreen();
+  }
+
+  mapWrap.classList.remove("fullscreen-fallback");
+  syncFullscreenUI();
+}
+
+$("fullscreen").onclick = async () => {
+  if (busy || fullscreenTransition) return;
+
+  fullscreenTransition = true;
+
+  try {
+    if (isMapFullscreen()) {
+      await exitMapFullscreen();
+    } else {
+      await enterMapFullscreen();
+    }
+  } catch (error) {
+    $("error").textContent =
+      "Не вдалося змінити повноекранний режим: " + error.message;
+  } finally {
+    fullscreenTransition = false;
+    syncFullscreenUI();
+  }
+};
+
+document.addEventListener("fullscreenchange", () => {
+  finishDrag();
+  syncFullscreenUI();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape") return;
+
+  finishDrag();
+  stopPlacement();
+
+  if (mapWrap.classList.contains("fullscreen-fallback")) {
+    mapWrap.classList.remove("fullscreen-fallback");
+    syncFullscreenUI();
+  }
+});
+
+if (typeof ResizeObserver !== "undefined") {
+  const mapResizeObserver = new ResizeObserver(refreshMapSize);
+  mapResizeObserver.observe(mapEl);
+}
+
+window.addEventListener("resize", () => {
+  finishDrag();
+  refreshMapSize();
+});
+
+// Скріншот карти без панелі редагування.
+function waitTiles(timeout = 7000) {
+  return Promise.all(
+    [osm, satellite, dark]
+      .filter(layer => map.hasLayer(layer))
+      .map(layer => new Promise(resolve => {
+        if (!layer.isLoading()) {
+          resolve();
+          return;
+        }
+
+        let timer;
+
+        const finish = () => {
+          clearTimeout(timer);
+          layer.off("load", finish);
+          resolve();
+        };
+
+        layer.on("load", finish);
+        timer = setTimeout(finish, timeout);
+      }))
+  );
+}
+
+$("screenshot").onclick = async () => {
+  if (busy || fullscreenTransition) return;
+
+  finishDrag();
+  stopPlacement();
+
+  busy = true;
+  updateSummary();
+  $("screenshot").textContent = "⏳ Створення…";
+  $("error").textContent = "";
   map.closePopup();
 
-  const controls = Array.from(document.querySelectorAll(
-    "#cards-container button, #cards-container input, " +
-    "#cards-container textarea, #show-all"
-  ));
-  controls.forEach(control => { control.disabled = true; });
+  const controls = [...document.querySelectorAll(
+    "#cards button, #cards textarea, #add-card, #show-all, " +
+    ".map-toolbar button, .map-toolbar select, " +
+    "#collapse-all, #expand-all, #toggle-cards"
+  )];
+
+  const previous = controls.map(element => element.disabled);
+  controls.forEach(element => { element.disabled = true; });
+
+  const handlers = pauseHandlers();
+  mapWrap.classList.add("capturing");
+
+  let resultCreated = false;
+  let captureError = null;
 
   try {
     map.stop();
     map.invalidateSize();
 
     await new Promise(resolve => setTimeout(resolve, 300));
-    await waitForTiles();
-    await waitForMarkerImages();
+    await waitTiles();
 
-    const canvas = await html2canvas(
-      document.getElementById("map-wrap"),
-      {
-        useCORS: true,
-        allowTaint: false,
-        scale: Math.min(window.devicePixelRatio || 2, 3),
-        logging: false,
-        backgroundColor: "#1e1e1e"
-      }
+    await Promise.all(
+      [...mapEl.querySelectorAll(".vehicle-symbol img")].map(img =>
+        img.decode
+          ? img.decode().catch(() => {})
+          : Promise.resolve()
+      )
     );
 
-    const newBlob = await canvasToBlob(canvas);
-    const newURL = URL.createObjectURL(newBlob);
+    const canvas = await html2canvas(mapEl, {
+      useCORS: true,
+      allowTaint: false,
+      scale: Math.min(window.devicePixelRatio || 2, 3),
+      logging: false,
+      backgroundColor: "#17202a"
+    });
 
-    if (previewObjectURL) URL.revokeObjectURL(previewObjectURL);
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        result => result
+          ? resolve(result)
+          : reject(new Error("Не вдалося створити PNG.")),
+        "image/png"
+      );
+    });
 
-    screenshotBlob = newBlob;
-    previewObjectURL = newURL;
-    previewImg.src = newURL;
-    previewWrap.style.display = "block";
-    previewWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (previewURL) URL.revokeObjectURL(previewURL);
+
+    screenshotBlob = blob;
+    previewURL = URL.createObjectURL(blob);
+    $("preview-img").src = previewURL;
+    $("preview").hidden = false;
+
+    resultCreated = true;
   } catch (error) {
-    errorElement.textContent =
-      "Помилка створення скріншота: " + error.message;
+    captureError = error;
   } finally {
-    controls.forEach(control => { control.disabled = false; });
-    screenshotInProgress = false;
-    screenshotButton.classList.remove("loading");
-    updateScreenshotButton();
-  }
-});
+    controls.forEach((element, index) => {
+      element.disabled = previous[index];
+    });
 
-function createFileName() {
+    handlers.forEach(handler => handler.enable());
+    mapWrap.classList.remove("capturing");
+
+    busy = false;
+    $("screenshot").textContent = "📸 Скріншот";
+    updateSummary();
+  }
+
+  // Виходимо з повноекранного режиму, щоб показати результат.
+  if (isMapFullscreen()) {
+    try {
+      await exitMapFullscreen();
+    } catch {
+      // Якщо браузер не дозволив вихід, користувач може вийти кнопкою.
+    }
+  }
+
+  if (captureError) {
+    $("error").textContent = "Помилка скріншота: " + captureError.message;
+  }
+
+  if (resultCreated) {
+    requestAnimationFrame(() => {
+      $("preview").scrollIntoView({
+        behavior: "smooth",
+        block: "nearest"
+      });
+    });
+  }
+};
+
+function filename() {
   const timestamp = new Date().toISOString()
     .slice(0, 19).replace(/[:T]/g, "-");
+
   return `objects-map_${timestamp}.png`;
 }
 
@@ -1106,8 +1569,9 @@ function saveScreenshot() {
 
   const url = URL.createObjectURL(screenshotBlob);
   const link = document.createElement("a");
+
   link.href = url;
-  link.download = createFileName();
+  link.download = filename();
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -1115,51 +1579,51 @@ function saveScreenshot() {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-document.getElementById("btn-save")
-  .addEventListener("click", saveScreenshot);
+$("save").onclick = saveScreenshot;
 
-document.getElementById("btn-share").addEventListener("click", async () => {
+$("share").onclick = async () => {
   if (!screenshotBlob) return;
 
-  const file = new File([screenshotBlob], createFileName(), {
+  const file = new File([screenshotBlob], filename(), {
     type: "image/png"
   });
 
   try {
     if (
       navigator.share &&
-      navigator.canShare &&
-      navigator.canShare({ files: [file] })
+      navigator.canShare?.({ files: [file] })
     ) {
       await navigator.share({
         title: "Об’єкти на карті",
-        text: "Карта розташування об’єктів",
         files: [file]
       });
     } else {
       saveScreenshot();
-      errorElement.textContent =
+      $("error").textContent =
         "Поширення файлів недоступне. Зображення передано для завантаження.";
     }
   } catch (error) {
     if (error.name !== "AbortError") {
-      errorElement.textContent = "Помилка поширення: " + error.message;
+      $("error").textContent = "Помилка поширення: " + error.message;
     }
   }
-});
+};
 
-document.getElementById("btn-close").addEventListener("click", () => {
-  previewWrap.style.display = "none";
-  previewImg.removeAttribute("src");
+$("close-preview").onclick = () => {
+  $("preview").hidden = true;
+  $("preview-img").removeAttribute("src");
 
-  if (previewObjectURL) {
-    URL.revokeObjectURL(previewObjectURL);
-    previewObjectURL = null;
-  }
+  if (previewURL) URL.revokeObjectURL(previewURL);
+
+  previewURL = null;
   screenshotBlob = null;
-});
+};
 
-window.addEventListener("resize", () => map.invalidateSize());
+// Три початкові згорнуті картки.
+// Кнопками можна додавати більше або видалити всі.
+for (let i = 0; i < 3; i++) {
+  addObject("geran", false);
+}
 </script>
 </body>
 </html>
