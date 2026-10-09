@@ -2,18 +2,12 @@
 <html lang="uk">
 <head>
 <meta charset="utf-8">
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1, viewport-fit=cover"
->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#172554">
 
 <title>Трекер об’єктів — Герань, Ракета, Бандероль</title>
 
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
   :root {
@@ -26,11 +20,7 @@
 
   body {
     margin: 0;
-    font-family:
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: #f3f5f8;
     color: #17202a;
   }
@@ -81,7 +71,7 @@
     width: 10px;
     height: 10px;
     flex-shrink: 0;
-    background: #2563eb;
+    background: #dc2626;
     border-radius: 50%;
   }
 
@@ -125,6 +115,7 @@
     width: 24px;
     height: 24px;
     flex-shrink: 0;
+    object-fit: contain;
   }
 
   .coords-input {
@@ -213,9 +204,7 @@
     border-radius: 12px;
     font-size: 15px;
     font-weight: 650;
-    transition:
-      opacity 0.15s,
-      transform 0.15s;
+    transition: opacity 0.15s, transform 0.15s;
   }
 
   button:active {
@@ -245,13 +234,7 @@
   #coords-out {
     margin: 8px 2px;
     color: #374151;
-    font:
-      13px ui-monospace,
-      SFMono-Regular,
-      Menlo,
-      Monaco,
-      Consolas,
-      monospace;
+    font: 13px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     white-space: pre-line;
   }
 
@@ -294,9 +277,7 @@
   }
 
   @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
   }
 
   #map-wrap {
@@ -314,12 +295,10 @@
     background: #1e1e1e;
   }
 
-  /* CSS-фільтр для створення темної карти без API Key */
   .dark-tiles {
     filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
   }
 
-  /* Маркер та візуальний індикатор напрямку */
   .heading-icon {
     background: transparent;
     border: 0;
@@ -394,20 +373,9 @@
     font-size: 14px;
   }
 
-  .btn-save {
-    color: white;
-    background: #16a34a;
-  }
-
-  .btn-share {
-    color: white;
-    background: #2563eb;
-  }
-
-  .btn-close {
-    color: white;
-    background: #6b7280;
-  }
+  .btn-save { color: white; background: #16a34a; }
+  .btn-share { color: white; background: #2563eb; }
+  .btn-close { color: white; background: #6b7280; }
 
   footer {
     padding: 12px 8px 24px;
@@ -418,31 +386,15 @@
   }
 
   @media (max-width: 480px) {
-    .course-row {
-      gap: 6px;
-    }
-
-    .course-num {
-      width: 64px;
-    }
-
-    .course-deg {
-      min-width: 34px;
-    }
-
-    #preview-bar {
-      flex-wrap: wrap;
-    }
-
-    #preview-bar button {
-      min-width: 100px;
-    }
+    .course-row { gap: 6px; }
+    .course-num { width: 64px; }
+    .course-deg { min-width: 34px; }
+    #preview-bar { flex-wrap: wrap; }
+    #preview-bar button { min-width: 100px; }
   }
 
   @supports (padding: env(safe-area-inset-bottom)) {
-    footer {
-      padding-bottom: calc(24px + env(safe-area-inset-bottom));
-    }
+    footer { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
   }
 </style>
 </head>
@@ -482,29 +434,15 @@
     <img id="preview-img" alt="Попередній перегляд скріншота карти">
 
     <div id="preview-bar">
-      <button class="btn-save" id="btn-save" type="button">
-        💾 Зберегти
-      </button>
-
-      <button class="btn-share" id="btn-share" type="button">
-        📤 Поділитися
-      </button>
-
-      <button
-        class="btn-close"
-        id="btn-close"
-        type="button"
-        aria-label="Закрити попередній перегляд"
-      >
-        ✕
-      </button>
+      <button class="btn-save" id="btn-save" type="button">💾 Зберегти</button>
+      <button class="btn-share" id="btn-share" type="button">📤 Поділитися</button>
+      <button class="btn-close" id="btn-close" type="button" aria-label="Закрити попередній перегляд">✕</button>
     </div>
   </div>
 </main>
 
 <footer>
-  Карта — OpenStreetMap / Google. Для завантаження карти потрібне підключення
-  до інтернету.
+  Карта — OpenStreetMap / Google. Для завантаження карти потрібне підключення до інтернету.
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -513,12 +451,9 @@
 <script>
 "use strict";
 
-/* ══════════════════════════════════════
-   НАЛАШТУВАННЯ
-══════════════════════════════════════ */
-
 const VEHICLE_COUNT = 3;
 
+// Шляхи до файлів у папці assets
 const VEHICLE_TYPES = {
   geran: { label: "Герань", image: "assets/geran-marker.png" },
   rocket: { label: "Ракета", image: "assets/rocket-marker.png" },
@@ -526,58 +461,21 @@ const VEHICLE_TYPES = {
 };
 
 const VEHICLE_COLORS = [
-  {
-    main: "#dc2626"
-  },
-  {
-    main: "#dc2626"
-  },
-  {
-    main: "#dc2626"
-  }
+  { main: "#dc2626" },
+  { main: "#dc2626" },
+  { main: "#dc2626" }
 ];
-
-/* ══════════════════════════════════════
-   СТВОРЕННЯ КАРТОК
-══════════════════════════════════════ */
 
 const cardsContainer = document.getElementById("cards-container");
 
 function createCompassSVG(color) {
   return `
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 100 100"
-      aria-hidden="true"
-    >
-      <circle
-        cx="50"
-        cy="50"
-        r="43"
-        fill="#eff6ff"
-        stroke="#bfdbfe"
-        stroke-width="5"
-      ></circle>
-
+    <svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="43" fill="#eff6ff" stroke="#bfdbfe" stroke-width="5"></circle>
       <g class="compass-g" transform="rotate(0,50,50)">
-        <polygon
-          points="50,8 64,55 50,46 36,55"
-          fill="${color}"
-          stroke="#172554"
-          stroke-width="3"
-          stroke-linejoin="round"
-        ></polygon>
-
-        <polygon
-          points="50,92 36,55 50,64 64,55"
-          fill="#cbd5e1"
-          stroke="#64748b"
-          stroke-width="3"
-          stroke-linejoin="round"
-        ></polygon>
+        <polygon points="50,8 64,55 50,46 36,55" fill="${color}" stroke="#172554" stroke-width="3" stroke-linejoin="round"></polygon>
+        <polygon points="50,92 36,55 50,64 64,55" fill="#cbd5e1" stroke="#64748b" stroke-width="3" stroke-linejoin="round"></polygon>
       </g>
-
       <circle cx="50" cy="50" r="5" fill="#ffffff"></circle>
     </svg>
   `;
@@ -595,11 +493,7 @@ function createCard(index) {
 
   card.innerHTML = `
     <div class="card-title">
-      <span
-        class="dot"
-        style="background:${color}"
-        aria-hidden="true"
-      ></span>
+      <span class="dot" style="background:${color}" aria-hidden="true"></span>
       <span class="object-name">Герань ${number}</span>
     </div>
 
@@ -617,10 +511,7 @@ function createCard(index) {
       `).join("")}
     </div>
 
-    <label for="coords-${number}">
-      Координати
-    </label>
-
+    <label for="coords-${number}">Координати</label>
     <textarea
       id="coords-${number}"
       class="coords-input"
@@ -632,45 +523,14 @@ function createCard(index) {
     ></textarea>
 
     <div class="course-row">
-      <label for="course-num-${number}">
-        Курс
-      </label>
-
-      <input
-        id="course-num-${number}"
-        type="number"
-        class="course-num"
-        min="0"
-        max="359"
-        step="1"
-        value="0"
-        inputmode="numeric"
-        aria-label="Курс «Герань ${number}» у градусах"
-      >
-
-      <input
-        id="course-range-${number}"
-        type="range"
-        class="course-range"
-        min="0"
-        max="359"
-        step="1"
-        value="0"
-        aria-label="Повзунок курсу «Герань ${number}»"
-      >
-
+      <label for="course-num-${number}">Курс</label>
+      <input id="course-num-${number}" type="number" class="course-num" min="0" max="359" step="1" value="0" inputmode="numeric">
+      <input id="course-range-${number}" type="range" class="course-range" min="0" max="359" step="1" value="0">
       <span class="course-deg">0°</span>
-
-      <div class="compass-wrap">
-        ${createCompassSVG(color)}
-      </div>
+      <div class="compass-wrap">${createCompassSVG(color)}</div>
     </div>
 
-    <div
-      id="status-${number}"
-      class="card-status"
-      aria-live="polite"
-    ></div>
+    <div id="status-${number}" class="card-status" aria-live="polite"></div>
   `;
 
   return card;
@@ -680,25 +540,18 @@ for (let index = 0; index < VEHICLE_COUNT; index += 1) {
   cardsContainer.appendChild(createCard(index));
 }
 
-/* ══════════════════════════════════════
-   КАРТА ТА ШАРИ
-══════════════════════════════════════ */
-
-// 1. Стандартна схема OpenStreetMap
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   crossOrigin: true,
   attribution: '&copy; OpenStreetMap contributors'
 });
 
-// 2. Google Супутник + Назви українською
 const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=uk&x={x}&y={y}&z={z}', {
   maxZoom: 20,
   crossOrigin: true,
   attribution: '&copy; Google Maps'
 });
 
-// 3. Темна карта (CSS-фільтр на OSM)
 const darkLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   crossOrigin: true,
@@ -724,13 +577,8 @@ const markers = new Array(VEHICLE_COUNT).fill(null);
 let screenshotBlob = null;
 let previewObjectURL = null;
 
-/* ══════════════════════════════════════
-   SVG-МАРКЕР ТРАНСПОРТУ
-══════════════════════════════════════ */
-
 function buildVehicleImage(course, size, type = "geran") {
-  const normalizedCourse =
-    ((Number(course) % 360) + 360) % 360;
+  const normalizedCourse = ((Number(course) % 360) + 360) % 360;
 
   return `
     <img
@@ -745,9 +593,7 @@ function buildVehicleImage(course, size, type = "geran") {
 }
 
 function vehicleIcon(course, index) {
-  const normalizedCourse =
-    ((Number(course) % 360) + 360) % 360;
-
+  const normalizedCourse = ((Number(course) % 360) + 360) % 360;
   const colors = VEHICLE_COLORS[index];
   const size = 24;
 
@@ -775,54 +621,20 @@ function vehicleIcon(course, index) {
   });
 }
 
-/* ══════════════════════════════════════
-   ОБРОБКА КООРДИНАТ
-══════════════════════════════════════ */
-
 function parseCoords(raw) {
-  const parts = raw
-    .trim()
-    .replace(/[;\n\t]+/g, " ")
-    .replace(/,/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (parts.length !== 2) {
-    return null;
-  }
-
-  const lat = Number(parts[0]);
-  const lon = Number(parts[1]);
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-    return null;
-  }
-
-  if (
-    lat < -90 ||
-    lat > 90 ||
-    lon < -180 ||
-    lon > 180
-  ) {
-    return null;
-  }
-
+  const parts = raw.trim().replace(/[;\n\t]+/g, " ").replace(/,/g, " ").split(/\s+/).filter(Boolean);
+  if (parts.length !== 2) return null;
+  const lat = Number(parts[0]), lon = Number(parts[1]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
   return [lat, lon];
 }
 
 function normalizeCourse(value) {
   let course = Number(value);
-
-  if (!Number.isFinite(course)) {
-    course = 0;
-  }
-
+  if (!Number.isFinite(course)) course = 0;
   return ((Math.round(course) % 360) + 360) % 360;
 }
-
-/* ══════════════════════════════════════
-   КЕРУВАННЯ КАРТКАМИ
-══════════════════════════════════════ */
 
 const cards = document.querySelectorAll(".target-card");
 
@@ -841,10 +653,7 @@ function markerPopup(index, point, course) {
 
 function refreshMarker(index) {
   const marker = markers[index];
-
-  if (!marker) {
-    return;
-  }
+  if (!marker) return;
 
   const course = normalizeCourse(cards[index].dataset.course);
   marker.options.title = objectLabel(index);
@@ -853,14 +662,10 @@ function refreshMarker(index) {
 
   document.getElementById("coords-out").textContent = markers
     .map((existingMarker, markerIndex) => {
-      if (!existingMarker) {
-        return null;
-      }
-
+      if (!existingMarker) return null;
       const point = existingMarker.getLatLng();
       const heading = normalizeCourse(cards[markerIndex].dataset.course);
-      return `${objectLabel(markerIndex)}: ` +
-        `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)} | Курс: ${heading}°`;
+      return `${objectLabel(markerIndex)}: ${point.lat.toFixed(6)}, ${point.lng.toFixed(6)} | Курс: ${heading}°`;
     })
     .filter(Boolean)
     .join("\n");
@@ -880,59 +685,23 @@ cards.forEach((card, index) => {
       card.querySelectorAll(".icon-option").forEach(option => {
         option.setAttribute("aria-pressed", String(option === button));
       });
-      numEl.setAttribute("aria-label", `Курс «${objectLabel(index)}» у градусах`);
-      rangeEl.setAttribute("aria-label", `Повзунок курсу «${objectLabel(index)}»`);
       refreshMarker(index);
     });
   });
 
   function setCourse(value) {
     const course = normalizeCourse(value);
-
     card.dataset.course = String(course);
     numEl.value = String(course);
     rangeEl.value = String(course);
     degEl.textContent = `${course}°`;
-
-    compassG.setAttribute(
-      "transform",
-      `rotate(${course},50,50)`
-    );
-
+    compassG.setAttribute("transform", `rotate(${course},50,50)`);
     refreshMarker(index);
   }
 
-  numEl.addEventListener("input", () => {
-    if (numEl.value !== "") {
-      setCourse(numEl.value);
-    }
-  });
-
-  numEl.addEventListener("change", () => {
-    setCourse(numEl.value);
-  });
-
-  rangeEl.addEventListener("input", () => {
-    setCourse(rangeEl.value);
-  });
-
-  numEl.addEventListener("keydown", event => {
-    if (event.key === "ArrowUp") {
-      event.preventDefault();
-
-      setCourse(
-        Number(card.dataset.course) + 1
-      );
-    }
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-
-      setCourse(
-        Number(card.dataset.course) - 1
-      );
-    }
-  });
+  numEl.addEventListener("input", () => { if (numEl.value !== "") setCourse(numEl.value); });
+  numEl.addEventListener("change", () => { setCourse(numEl.value); });
+  rangeEl.addEventListener("input", () => { setCourse(rangeEl.value); });
 
   coordsInput.addEventListener("keydown", event => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -941,10 +710,6 @@ cards.forEach((card, index) => {
     }
   });
 });
-
-/* ══════════════════════════════════════
-   ПОКАЗАТИ ТРАНСПОРТ
-══════════════════════════════════════ */
 
 const showAllButton = document.getElementById("show-all");
 const screenshotButton = document.getElementById("screenshot");
@@ -962,26 +727,16 @@ showAllButton.addEventListener("click", () => {
   let hasInvalidInput = false;
 
   cards.forEach((card, index) => {
-    const coordsInput =
-      card.querySelector(".coords-input");
-
-    const status =
-      card.querySelector(".card-status");
+    const coordsInput = card.querySelector(".coords-input");
+    const status = card.querySelector(".card-status");
 
     const raw = coordsInput.value.trim();
-    const course = normalizeCourse(
-      card.dataset.course
-    );
+    const course = normalizeCourse(card.dataset.course);
 
     if (!raw) {
       status.textContent = "";
       status.className = "card-status";
-
-      if (markers[index]) {
-        map.removeLayer(markers[index]);
-        markers[index] = null;
-      }
-
+      if (markers[index]) { map.removeLayer(markers[index]); markers[index] = null; }
       return;
     }
 
@@ -989,24 +744,13 @@ showAllButton.addEventListener("click", () => {
 
     if (!point) {
       hasInvalidInput = true;
-
-      status.textContent =
-        "⚠️ Невірний формат координат";
-
-      status.className =
-        "card-status err";
-
-      if (markers[index]) {
-        map.removeLayer(markers[index]);
-        markers[index] = null;
-      }
-
+      status.textContent = "⚠️ Невірний формат координат";
+      status.className = "card-status err";
+      if (markers[index]) { map.removeLayer(markers[index]); markers[index] = null; }
       return;
     }
 
-    if (markers[index]) {
-      map.removeLayer(markers[index]);
-    }
+    if (markers[index]) { map.removeLayer(markers[index]); }
 
     markers[index] = L.marker(point, {
       icon: vehicleIcon(course, index),
@@ -1016,74 +760,44 @@ showAllButton.addEventListener("click", () => {
       .addTo(map)
       .bindPopup(markerPopup(index, { lat: point[0], lng: point[1] }, course));
 
-    status.textContent =
-      `✅ ${point[0].toFixed(5)}, ` +
-      `${point[1].toFixed(5)} | ${course}°`;
-
+    status.textContent = `✅ ${point[0].toFixed(5)}, ${point[1].toFixed(5)} | ${course}°`;
     status.className = "card-status ok";
 
     bounds.push(point);
-
-    outputLines.push(
-      `${objectLabel(index)}: ` +
-      `${point[0].toFixed(6)}, ` +
-      `${point[1].toFixed(6)} | ` +
-      `Курс: ${course}°`
-    );
-
+    outputLines.push(`${objectLabel(index)}: ${point[0].toFixed(6)}, ${point[1].toFixed(6)} | Курс: ${course}°`);
     anyShown = true;
   });
 
-  coordsOutput.textContent =
-    outputLines.join("\n");
+  coordsOutput.textContent = outputLines.join("\n");
 
   if (!anyShown) {
     screenshotButton.disabled = true;
-
-    errorElement.textContent =
-      "Введіть правильні координати хоча б для одного об’єкта.";
-
+    errorElement.textContent = "Введіть правильні координати хоча б для одного об’єкта.";
     return;
   }
 
   if (hasInvalidInput) {
-    errorElement.textContent =
-      "Деякі координати мають невірний формат і не показані.";
+    errorElement.textContent = "Деякі координати мають невірний формат і не показані.";
   }
 
   if (bounds.length === 1) {
     map.setView(bounds[0], 11);
   } else {
-    map.fitBounds(bounds, {
-      padding: [70, 70],
-      maxZoom: 14
-    });
+    map.fitBounds(bounds, { padding: [70, 70], maxZoom: 14 });
   }
 
   map.invalidateSize();
   screenshotButton.disabled = false;
 });
 
-/* ══════════════════════════════════════
-   СКРІНШОТ
-══════════════════════════════════════ */
-
-const previewWrap =
-  document.getElementById("preview-wrap");
-
-const previewImg =
-  document.getElementById("preview-img");
+const previewWrap = document.getElementById("preview-wrap");
+const previewImg = document.getElementById("preview-img");
 
 function canvasToBlob(canvas) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(
-          new Error("Не вдалося створити PNG-зображення.")
-        );
-      }
+      if (blob) resolve(blob);
+      else reject(new Error("Не вдалося створити PNG-зображення."));
     }, "image/png");
   });
 }
@@ -1099,170 +813,87 @@ screenshotButton.addEventListener("click", async () => {
 
   try {
     map.invalidateSize();
+    await new Promise(resolve => setTimeout(resolve, 600));
 
-    await new Promise(resolve => {
-      setTimeout(resolve, 600);
+    const canvas = await html2canvas(document.getElementById("map-wrap"), {
+      useCORS: true,
+      allowTaint: false,
+      scale: Math.min(window.devicePixelRatio || 2, 3),
+      logging: false,
+      backgroundColor: "#1e1e1e"
     });
-
-    const canvas = await html2canvas(
-      document.getElementById("map-wrap"),
-      {
-        useCORS: true,
-        allowTaint: false,
-        scale: Math.min(
-          window.devicePixelRatio || 2,
-          3
-        ),
-        logging: false,
-        backgroundColor: "#1e1e1e"
-      }
-    );
 
     screenshotBlob = await canvasToBlob(canvas);
 
-    if (previewObjectURL) {
-      URL.revokeObjectURL(previewObjectURL);
-    }
-
-    previewObjectURL =
-      URL.createObjectURL(screenshotBlob);
+    if (previewObjectURL) URL.revokeObjectURL(previewObjectURL);
+    previewObjectURL = URL.createObjectURL(screenshotBlob);
 
     previewImg.src = previewObjectURL;
     previewWrap.style.display = "block";
-
-    previewWrap.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest"
-    });
+    previewWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (error) {
-    errorElement.textContent =
-      "Помилка створення скріншота: " +
-      error.message;
+    errorElement.textContent = "Помилка створення скріншота: " + error.message;
   } finally {
     screenshotButton.classList.remove("loading");
     screenshotButton.disabled = false;
   }
 });
 
-/* ══════════════════════════════════════
-   ЗБЕРЕЖЕННЯ
-══════════════════════════════════════ */
-
 function createFileName() {
-  const timestamp = new Date()
-    .toISOString()
-    .slice(0, 19)
-    .replace(/[:T]/g, "-");
-
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   return `transport-map_${timestamp}.png`;
 }
 
-document
-  .getElementById("btn-save")
-  .addEventListener("click", () => {
-    if (!screenshotBlob) {
-      return;
-    }
-
-    const downloadURL =
-      URL.createObjectURL(screenshotBlob);
-
-    const link = document.createElement("a");
-
-    link.href = downloadURL;
-    link.download = createFileName();
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    setTimeout(() => {
-      URL.revokeObjectURL(downloadURL);
-    }, 1000);
-  });
-
-/* ══════════════════════════════════════
-   ПОШИРЕННЯ
-══════════════════════════════════════ */
-
-document
-  .getElementById("btn-share")
-  .addEventListener("click", async () => {
-    if (!screenshotBlob) {
-      return;
-    }
-
-    const file = new File(
-      [screenshotBlob],
-      createFileName(),
-      {
-        type: "image/png"
-      }
-    );
-
-    if (
-      navigator.canShare &&
-      navigator.canShare({ files: [file] })
-    ) {
-      try {
-        await navigator.share({
-          title: "Об’єкти на карті",
-          text: "Карта розташування об’єктів: Герань, Ракета, Бандероль",
-          files: [file]
-        });
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          errorElement.textContent =
-            "Помилка поширення: " +
-            error.message;
-        }
-      }
-
-      return;
-    }
-
-    const shareURL =
-      URL.createObjectURL(screenshotBlob);
-
-    const openedWindow = window.open(
-      shareURL,
-      "_blank",
-      "noopener"
-    );
-
-    if (!openedWindow) {
-      errorElement.textContent =
-        "Браузер заблокував відкриття зображення. " +
-        "Скористайтеся кнопкою «Зберегти».";
-    }
-
-    setTimeout(() => {
-      URL.revokeObjectURL(shareURL);
-    }, 60000);
-  });
-
-/* ══════════════════════════════════════
-   ЗАКРИТТЯ ПЕРЕГЛЯДУ
-══════════════════════════════════════ */
-
-document
-  .getElementById("btn-close")
-  .addEventListener("click", () => {
-    previewWrap.style.display = "none";
-
-    if (previewObjectURL) {
-      URL.revokeObjectURL(previewObjectURL);
-      previewObjectURL = null;
-    }
-
-    previewImg.removeAttribute("src");
-    screenshotBlob = null;
-  });
-
-/* Корекція розміру карти після зміни орієнтації екрана */
-window.addEventListener("resize", () => {
-  map.invalidateSize();
+document.getElementById("btn-save").addEventListener("click", () => {
+  if (!screenshotBlob) return;
+  const downloadURL = URL.createObjectURL(screenshotBlob);
+  const link = document.createElement("a");
+  link.href = downloadURL;
+  link.download = createFileName();
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(downloadURL), 1000);
 });
+
+document.getElementById("btn-share").addEventListener("click", async () => {
+  if (!screenshotBlob) return;
+  const file = new File([screenshotBlob], createFileName(), { type: "image/png" });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: "Об’єкти на карті",
+        text: "Карта розташування об’єктів: Герань, Ракета, Бандероль",
+        files: [file]
+      });
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        errorElement.textContent = "Помилка поширення: " + error.message;
+      }
+    }
+    return;
+  }
+
+  const shareURL = URL.createObjectURL(screenshotBlob);
+  const openedWindow = window.open(shareURL, "_blank", "noopener");
+  if (!openedWindow) {
+    errorElement.textContent = "Браузер заблокував відкриття зображення. Скористайтеся кнопкою «Зберегти».";
+  }
+  setTimeout(() => URL.revokeObjectURL(shareURL), 60000);
+});
+
+document.getElementById("btn-close").addEventListener("click", () => {
+  previewWrap.style.display = "none";
+  if (previewObjectURL) {
+    URL.revokeObjectURL(previewObjectURL);
+    previewObjectURL = null;
+  }
+  previewImg.removeAttribute("src");
+  screenshotBlob = null;
+});
+
+window.addEventListener("resize", () => { map.invalidateSize(); });
 </script>
 
 </body>
