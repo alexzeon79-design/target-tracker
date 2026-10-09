@@ -56,7 +56,12 @@
 
   /* обгортка карти — потрібна для html2canvas */
   #map-wrap { position:relative; margin-top:14px; border-radius:14px; overflow:hidden; border:1px solid #d5dbe4; }
-  #map { height:min(54vh,480px); min-height:300px; }
+  #map { height:min(54vh,480px); min-height:300px; background:#1e1e1e; }
+
+  /* CSS-фільтр для створення темної карти без API-ключів */
+  .dark-tiles {
+    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  }
 
   /* превью скріншоту */
   #preview-wrap {
@@ -152,22 +157,22 @@
 
 <!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- html2canvas — рендерить DOM у canvas, включно з SVG-маркерами -->
+<!-- html2canvas -->
 <script src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
 /* ══════════════════════════════════════
-   КАРТА ТА ШАРИ (БЕЗ API KEY ТА З НАЗВАМИ)
+   КАРТА ТА ШАРИ
 ══════════════════════════════════════ */
 
-// 1. Стандартна схема OSM
+// 1. Стандартна схема OpenStreetMap
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   crossOrigin: true,
   attribution: '&copy; OpenStreetMap contributors'
 });
 
-// 2. Гібридний супутник (Esri World Imagery + Прозорий шар з назвами міст та доріг)
+// 2. Гібридний супутник (Esri World Imagery + Назви міст та доріг)
 const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 18,
   crossOrigin: true,
@@ -177,31 +182,17 @@ const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/service
 const esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 18,
   crossOrigin: true,
-  pane: 'shadowPane' // розміщуємо підписи зверху супутника
+  pane: 'overlayPane'
 });
 
 const hybridSatellite = L.layerGroup([esriSat, esriLabels]);
 
-// 3. Безкоштовна темна карта (OpenStreetMap France Dark / CyclOSM / CartoDB CDN)
-const darkMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+// 3. Темна карта (Застосування CSS-фільтра на OSM без жодних API Key)
+const darkLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   crossOrigin: true,
+  className: 'dark-tiles',
   attribution: '&copy; OpenStreetMap contributors'
-});
-
-// Темна альтернатива без блокувань:
-const darkTheme = L.tileLayer('https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  crossOrigin: true,
-  attribution: '&copy; OpenStreetMap contributors'
-});
-
-// Робочий темний шар без ключів (Спеціальний CDN):
-const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  crossOrigin: true,
-  subdomains: 'abcd',
-  attribution: '&copy; OpenStreetMap &copy; CARTO'
 });
 
 const map = L.map('map', { 
@@ -370,7 +361,7 @@ screenshotBtn.addEventListener('click', async () => {
       allowTaint: false,
       scale: window.devicePixelRatio || 2,
       logging: false,
-      backgroundColor: '#e8e0d8'
+      backgroundColor: '#1e1e1e'
     });
 
     canvas.toBlob(blob => {
