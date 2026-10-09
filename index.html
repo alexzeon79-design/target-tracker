@@ -14,6 +14,7 @@
     color-scheme: light;
     --map-icon-size: 22px;
     --picker-icon-size: 18px;
+    --marker-circle-size: 38px;
   }
 
   * { box-sizing: border-box; }
@@ -32,21 +33,27 @@
   }
 
   h1 { margin: 0 0 6px; font-size: 23px; }
-  header p { margin: 0; font-size: 14px; opacity: 0.92; }
 
-  main {
-    max-width: 760px;
-    margin: auto;
-    padding: 14px;
+  header p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    opacity: 0.92;
   }
 
+  main { max-width: 760px; margin: auto; padding: 14px; }
+
   .target-card {
-    position: relative;
     margin-bottom: 12px;
     padding: 14px;
     background: white;
     border: 1px solid #cbd2dc;
     border-radius: 14px;
+  }
+
+  .target-card.placing {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.1);
   }
 
   .card-title {
@@ -59,7 +66,7 @@
     font-weight: 700;
   }
 
-  .card-title .dot {
+  .dot {
     width: 10px;
     height: 10px;
     flex-shrink: 0;
@@ -74,6 +81,26 @@
     font-size: 13px;
     font-weight: 600;
   }
+
+  button {
+    padding: 12px 14px;
+    cursor: pointer;
+    border: 0;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 650;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  button:active { opacity: 0.75; transform: scale(0.99); }
+
+  button:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.4);
+    outline-offset: 2px;
+  }
+
+  button:disabled { cursor: not-allowed; opacity: 0.45; }
 
   .icon-picker {
     display: flex;
@@ -103,7 +130,6 @@
     border-color: #dc2626;
   }
 
-  /* Іконки в кнопках — 18 px */
   .icon-option img {
     display: block;
     width: var(--picker-icon-size);
@@ -131,6 +157,23 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
   }
 
+  .btn-place {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px;
+    color: #172554;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 9px;
+    font-size: 14px;
+  }
+
+  .btn-place[aria-pressed="true"] {
+    color: #991b1b;
+    background: #fef2f2;
+    border-color: #dc2626;
+  }
+
   .course-row {
     display: flex;
     align-items: center;
@@ -138,10 +181,7 @@
     margin-top: 10px;
   }
 
-  .course-row label {
-    margin: 0;
-    white-space: nowrap;
-  }
+  .course-row label { margin: 0; white-space: nowrap; }
 
   .course-num {
     width: 72px;
@@ -166,11 +206,7 @@
     text-align: right;
   }
 
-  .compass-wrap {
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-  }
+  .compass-wrap { width: 24px; height: 24px; flex-shrink: 0; }
 
   .card-status {
     min-height: 16px;
@@ -180,26 +216,6 @@
 
   .card-status.ok { color: #067647; }
   .card-status.err { color: #b42318; }
-
-  button {
-    padding: 12px 14px;
-    cursor: pointer;
-    border: 0;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 650;
-    transition: opacity 0.15s, transform 0.15s;
-  }
-
-  button:active {
-    opacity: 0.75;
-    transform: scale(0.99);
-  }
-
-  button:focus-visible {
-    outline: 3px solid rgba(37, 99, 235, 0.3);
-    outline-offset: 2px;
-  }
 
   .primary {
     width: 100%;
@@ -218,7 +234,7 @@
   #coords-out {
     margin: 8px 2px;
     color: #374151;
-    font: 13px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     white-space: pre-line;
   }
 
@@ -226,7 +242,7 @@
     margin: 7px 2px 10px;
     color: #687386;
     font-size: 12px;
-    line-height: 1.4;
+    line-height: 1.5;
   }
 
   .btn-screenshot {
@@ -238,11 +254,6 @@
     margin-top: 10px;
     color: white;
     background: #172554;
-  }
-
-  .btn-screenshot:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
   }
 
   .spinner {
@@ -258,8 +269,31 @@
 
   .btn-screenshot.loading .spinner { display: block; }
 
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #placement-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    color: #991b1b;
+    background: #fff1f2;
+    border: 1px solid #fda4af;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  #placement-panel[hidden] { display: none; }
+
+  #cancel-placement {
+    flex-shrink: 0;
+    padding: 9px;
+    color: white;
+    background: #b91c1c;
+    font-size: 13px;
   }
 
   #map-wrap {
@@ -317,24 +351,43 @@
     border-left: 5px solid transparent;
   }
 
-  /* Іконки на карті — 22 px, автоматично по центру */
+  /* Напівпрозоре коло та іконка по центру */
   .vehicle-symbol {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: var(--map-icon-size);
-    height: var(--map-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--marker-circle-size);
+    height: var(--marker-circle-size);
     transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(220, 38, 38, 0.65);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
     pointer-events: auto;
     cursor: pointer;
   }
 
   .vehicle-symbol img {
     display: block;
-    width: 100%;
-    height: 100%;
+    width: var(--map-icon-size);
+    height: var(--map-icon-size);
     object-fit: contain;
     transform-origin: 50% 50%;
+  }
+
+  #map.manual-placement,
+  #map.manual-placement .leaflet-interactive,
+  #map.manual-placement .vehicle-symbol {
+    cursor: crosshair;
+  }
+
+  /* У режимі вибору точки маркери не перехоплюють натискання */
+  #map.manual-placement .heading-icon,
+  #map.manual-placement .vehicle-symbol {
+    pointer-events: none;
   }
 
   #preview-wrap {
@@ -346,16 +399,13 @@
     border-radius: 14px;
   }
 
-  #preview-img {
-    display: block;
-    width: 100%;
-  }
+  #preview-img { display: block; width: 100%; }
 
   #preview-bar {
     display: flex;
     gap: 8px;
     padding: 10px;
-    background: rgba(23, 37, 84, 0.95);
+    background: #172554;
   }
 
   #preview-bar button {
@@ -394,10 +444,11 @@
 </head>
 
 <body>
-
 <header>
   <h1>Трекер об’єктів</h1>
-  <p>Герань, Ракета, Бандероль — оберіть тип для кожного з трьох об’єктів.</p>
+  <p>
+    Оберіть тип об’єкта, введіть координати або вкажіть місце на карті.
+  </p>
 </header>
 
 <main>
@@ -411,30 +462,33 @@
   <div id="coords-out" aria-live="polite"></div>
 
   <p class="direction-note">
-    Пунктир лише візуально показує курс. Його довжина фіксована на
-    екрані та не відповідає реальній відстані або прогнозу руху.
+    Для ручного розміщення натисніть «Вказати на карті» в картці
+    потрібного об’єкта, потім натисніть на карту.
+    Для переміщення повторіть ці дії.<br>
+    Пунктир лише візуально показує курс: його довжина не відповідає
+    реальній відстані або прогнозу руху.
     Курс 0° — північ, 90° — схід.
   </p>
 
   <button class="btn-screenshot" id="screenshot" type="button" disabled>
     <span class="spinner" aria-hidden="true"></span>
-    <span class="btn-label">📸 Зробити скріншот карти</span>
+    <span>📸 Зробити скріншот карти</span>
   </button>
 
+  <div id="placement-panel" hidden>
+    <span id="placement-message" role="status" aria-live="polite"></span>
+    <button id="cancel-placement" type="button">Скасувати</button>
+  </div>
+
   <div id="map-wrap">
-    <div id="map"></div>
+    <div id="map" aria-label="Карта розташування об’єктів"></div>
   </div>
 
   <div id="preview-wrap">
     <img id="preview-img" alt="Попередній перегляд скріншота карти">
-
     <div id="preview-bar">
-      <button class="btn-save" id="btn-save" type="button">
-        💾 Зберегти
-      </button>
-      <button class="btn-share" id="btn-share" type="button">
-        📤 Поділитися
-      </button>
+      <button class="btn-save" id="btn-save" type="button">💾 Зберегти</button>
+      <button class="btn-share" id="btn-share" type="button">📤 Поділитися</button>
       <button class="btn-close" id="btn-close" type="button"
         aria-label="Закрити попередній перегляд">✕</button>
     </div>
@@ -455,6 +509,7 @@
 const VEHICLE_COUNT = 3;
 const ICON_COLOR = "#dc2626";
 
+// Вбудовані SVG-силуети: зовнішні файли іконок не потрібні.
 function createIconURL(path) {
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -462,7 +517,6 @@ function createIconURL(path) {
       <path fill="${ICON_COLOR}" d="${path}"/>
     </svg>
   `;
-
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
 }
 
@@ -470,32 +524,27 @@ const VEHICLE_TYPES = {
   geran: {
     label: "Герань",
     image: createIconURL(`
-      M32 3
-      C29.5 3 28.5 6 28 10
+      M32 3 C29.5 3 28.5 6 28 10
       L27 16 L4 48 L4 54 L23 46 L27 49 L27 54
       L22 58 L22 61 L30 58 L32 62 L34 58 L42 61
       L42 58 L37 54 L37 49 L41 46 L60 54 L60 48
-      L37 16 L36 10
-      C35.5 6 34.5 3 32 3 Z
+      L37 16 L36 10 C35.5 6 34.5 3 32 3 Z
     `)
   },
   rocket: {
     label: "Ракета",
     image: createIconURL(`
-      M32 3
-      C29.5 5 28.5 9 28.5 14
+      M32 3 C29.5 5 28.5 9 28.5 14
       L28.5 24 L10 34 L10 38 L28.5 32 L29 47
       L21 53 L21 56 L29 53 L30 61 L34 61 L35 53
       L43 56 L43 53 L35 47 L35.5 32 L54 38 L54 34
-      L35.5 24 L35.5 14
-      C35.5 9 34.5 5 32 3 Z
+      L35.5 24 L35.5 14 C35.5 9 34.5 5 32 3 Z
     `)
   },
   banderol: {
     label: "Бандероль",
     image: createIconURL(`
-      M32 3
-      C29 3 28 6 28 10
+      M32 3 C29 3 28 6 28 10
       L28 28 L8 33 L8 38 L28 35 L28 51 L22 53
       L22 57 L29 56 L29 61 L35 61 L35 56 L42 57
       L42 53 L36 51 L36 35 L56 38 L56 33 L36 28
@@ -504,14 +553,11 @@ const VEHICLE_TYPES = {
   }
 };
 
-const cardsContainer = document.getElementById("cards-container");
-
 function createCompassSVG() {
   return `
     <svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true">
       <circle cx="50" cy="50" r="43" fill="#eff6ff"
         stroke="#bfdbfe" stroke-width="5"></circle>
-
       <g class="compass-g" transform="rotate(0,50,50)">
         <polygon points="50,8 64,55 50,46 36,55"
           fill="${ICON_COLOR}" stroke="#172554" stroke-width="3"
@@ -520,8 +566,7 @@ function createCompassSVG() {
           fill="#cbd5e1" stroke="#64748b" stroke-width="3"
           stroke-linejoin="round"></polygon>
       </g>
-
-      <circle cx="50" cy="50" r="5" fill="#ffffff"></circle>
+      <circle cx="50" cy="50" r="5" fill="white"></circle>
     </svg>
   `;
 }
@@ -529,10 +574,8 @@ function createCompassSVG() {
 function createCard(index) {
   const number = index + 1;
   const card = document.createElement("section");
-
   card.className = "target-card";
   card.dataset.course = "0";
-  card.dataset.index = String(index);
   card.dataset.type = "geran";
 
   card.innerHTML = `
@@ -553,23 +596,24 @@ function createCard(index) {
     </div>
 
     <label for="coords-${number}">Координати</label>
-
     <textarea id="coords-${number}" class="coords-input"
       placeholder="48.123456, 32.654321"
       autocapitalize="off" autocomplete="off" spellcheck="false"
       aria-describedby="status-${number}"></textarea>
 
+    <button type="button" class="btn-place"
+      aria-pressed="false" aria-controls="map">
+      📍 Вказати на карті
+    </button>
+
     <div class="course-row">
       <label for="course-num-${number}">Курс</label>
-
       <input id="course-num-${number}" type="number"
         class="course-num" min="0" max="359" step="1"
         value="0" inputmode="numeric">
-
-      <input id="course-range-${number}" type="range"
-        class="course-range" min="0" max="359" step="1"
-        value="0" aria-label="Курс об’єкта ${number}, градуси">
-
+      <input type="range" class="course-range"
+        min="0" max="359" step="1" value="0"
+        aria-label="Курс об’єкта ${number}, градуси">
       <span class="course-deg">0°</span>
       <div class="compass-wrap">${createCompassSVG()}</div>
     </div>
@@ -577,35 +621,26 @@ function createCard(index) {
     <div id="status-${number}" class="card-status"
       aria-live="polite"></div>
   `;
-
   return card;
 }
 
-for (let index = 0; index < VEHICLE_COUNT; index += 1) {
-  cardsContainer.appendChild(createCard(index));
+const cardsContainer = document.getElementById("cards-container");
+for (let i = 0; i < VEHICLE_COUNT; i++) {
+  cardsContainer.appendChild(createCard(i));
 }
-
-const cards = document.querySelectorAll(".target-card");
+const cards = Array.from(document.querySelectorAll(".target-card"));
 
 const osmAttribution =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const osm = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {
-    maxZoom: 19,
-    crossOrigin: true,
-    attribution: osmAttribution
-  }
+  { maxZoom: 19, crossOrigin: true, attribution: osmAttribution }
 );
 
 const googleHybrid = L.tileLayer(
   "https://mt1.google.com/vt/lyrs=y&hl=uk&x={x}&y={y}&z={z}",
-  {
-    maxZoom: 20,
-    crossOrigin: true,
-    attribution: "&copy; Google Maps"
-  }
+  { maxZoom: 20, crossOrigin: true, attribution: "&copy; Google Maps" }
 );
 
 const darkLayer = L.tileLayer(
@@ -619,45 +654,40 @@ const darkLayer = L.tileLayer(
 );
 
 const map = L.map("map", {
-  zoomControl: true,
-  layers: [osm]
+  layers: [osm],
+  zoomControl: true
 }).setView([48.35, 32.25], 9);
 
 L.control.layers({
   "🗺 Схема": osm,
   "🛰 Супутник + Назви (UA)": googleHybrid,
   "🌙 Темна": darkLayer
-}, null, {
-  position: "topright"
-}).addTo(map);
+}, null, { position: "topright" }).addTo(map);
 
 const markers = new Array(VEHICLE_COUNT).fill(null);
-
 const showAllButton = document.getElementById("show-all");
 const screenshotButton = document.getElementById("screenshot");
 const errorElement = document.getElementById("error");
 const coordsOutput = document.getElementById("coords-out");
+const placementPanel = document.getElementById("placement-panel");
+const placementMessage = document.getElementById("placement-message");
 const previewWrap = document.getElementById("preview-wrap");
 const previewImg = document.getElementById("preview-img");
 
+let placementIndex = null;
+let screenshotInProgress = false;
 let screenshotBlob = null;
 let previewObjectURL = null;
-let screenshotInProgress = false;
 
 function normalizeCourse(value) {
-  let course = Number(value);
-  if (!Number.isFinite(course)) course = 0;
-  return ((Math.round(course) % 360) + 360) % 360;
+  const number = Number(value);
+  return Number.isFinite(number)
+    ? ((Math.round(number) % 360) + 360) % 360
+    : 0;
 }
 
-function buildVehicleImage(course, type = "geran") {
-  const heading = normalizeCourse(course);
-
-  return `
-    <img src="${VEHICLE_TYPES[type].image}"
-      alt="" aria-hidden="true" draggable="false"
-      style="transform:rotate(${heading}deg);">
-  `;
+function objectLabel(index) {
+  return `${VEHICLE_TYPES[cards[index].dataset.type].label} ${index + 1}`;
 }
 
 function vehicleIcon(course, index) {
@@ -667,19 +697,19 @@ function vehicleIcon(course, index) {
   return L.divIcon({
     html: `
       <div class="heading-marker">
-        <div class="heading-ray"
-          style="transform:rotate(${heading}deg);"
-          aria-hidden="true"></div>
-
+        <div class="heading-ray" aria-hidden="true"
+          style="transform:rotate(${heading}deg);"></div>
         <div class="vehicle-symbol">
-          ${buildVehicleImage(heading, type)}
+          <img src="${VEHICLE_TYPES[type].image}"
+            alt="" aria-hidden="true" draggable="false"
+            style="transform:rotate(${heading}deg);">
         </div>
       </div>
     `,
     className: "heading-icon",
     iconSize: [150, 150],
     iconAnchor: [75, 75],
-    popupAnchor: [0, -20]
+    popupAnchor: [0, -22]
   });
 }
 
@@ -693,16 +723,12 @@ function parseCoords(raw) {
   if (parts.length !== 2) return null;
 
   const lat = Number(parts[0]);
-  const lon = Number(parts[1]);
+  const lng = Number(parts[1]);
 
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-  if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
 
-  return [lat, lon];
-}
-
-function objectLabel(index) {
-  return `${VEHICLE_TYPES[cards[index].dataset.type].label} ${index + 1}`;
+  return [lat, lng];
 }
 
 function markerPopup(index, point, course) {
@@ -714,16 +740,19 @@ function markerPopup(index, point, course) {
   `;
 }
 
+function setStatus(index, text, state = "") {
+  const status = cards[index].querySelector(".card-status");
+  status.textContent = text;
+  status.className = "card-status" + (state ? ` ${state}` : "");
+}
+
 function updateCoordsOutput() {
   coordsOutput.textContent = markers.map((marker, index) => {
     if (!marker) return null;
-
     const point = marker.getLatLng();
     const course = normalizeCourse(cards[index].dataset.course);
-
     return `${objectLabel(index)}: ` +
-      `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)} | ` +
-      `Курс: ${course}°`;
+      `${point.lat.toFixed(6)}, ${point.lng.toFixed(6)} | Курс: ${course}°`;
   }).filter(Boolean).join("\n");
 }
 
@@ -744,20 +773,121 @@ function refreshMarker(index) {
   marker.setPopupContent(markerPopup(index, point, course));
 
   const element = marker.getElement();
-
   if (element) {
     element.setAttribute("title", objectLabel(index));
     element.setAttribute("aria-label", objectLabel(index));
   }
 
-  const status = cards[index].querySelector(".card-status");
-
-  status.textContent =
-    `✅ ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)} | ${course}°`;
-  status.className = "card-status ok";
-
+  // Не приховуємо повідомлення про ще не застосовані координати.
+  const input = cards[index].querySelector(".coords-input");
+  const entered = parseCoords(input.value);
+  if (
+    entered &&
+    Math.abs(entered[0] - point.lat) < 0.000001 &&
+    Math.abs(entered[1] - point.lng) < 0.000001
+  ) {
+    setStatus(index,
+      `✅ ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)} | ${course}°`,
+      "ok"
+    );
+  }
   updateCoordsOutput();
 }
+
+function removeMarker(index) {
+  if (!markers[index]) return;
+  map.removeLayer(markers[index]);
+  markers[index] = null;
+}
+
+function placeMarker(index, point) {
+  const course = normalizeCourse(cards[index].dataset.course);
+  removeMarker(index);
+
+  markers[index] = L.marker(point, {
+    icon: vehicleIcon(course, index),
+    keyboard: true,
+    title: objectLabel(index),
+    alt: objectLabel(index)
+  }).addTo(map).bindPopup(
+    markerPopup(index, L.latLng(point), course)
+  );
+
+  cards[index].querySelector(".coords-input")
+    .removeAttribute("aria-invalid");
+
+  setStatus(index,
+    `✅ ${point[0].toFixed(5)}, ${point[1].toFixed(5)} | ${course}°`,
+    "ok"
+  );
+  updateCoordsOutput();
+  updateScreenshotButton();
+}
+
+// Ручне розміщення
+function updatePlacementMessage() {
+  if (placementIndex === null) return;
+  placementMessage.textContent =
+    `${objectLabel(placementIndex)}: натисніть на потрібне місце карти.`;
+}
+
+function stopManualPlacement() {
+  placementIndex = null;
+  map.getContainer().classList.remove("manual-placement");
+  placementPanel.hidden = true;
+  placementMessage.textContent = "";
+
+  cards.forEach(card => {
+    card.classList.remove("placing");
+    const button = card.querySelector(".btn-place");
+    button.textContent = "📍 Вказати на карті";
+    button.setAttribute("aria-pressed", "false");
+  });
+}
+
+function startManualPlacement(index) {
+  const wasSelected = placementIndex === index;
+  stopManualPlacement();
+  if (wasSelected) return;
+
+  placementIndex = index;
+  map.closePopup();
+  errorElement.textContent = "";
+
+  cards[index].classList.add("placing");
+  const button = cards[index].querySelector(".btn-place");
+  button.textContent = "✕ Скасувати вибір точки";
+  button.setAttribute("aria-pressed", "true");
+
+  map.getContainer().classList.add("manual-placement");
+  placementPanel.hidden = false;
+  updatePlacementMessage();
+
+  map.invalidateSize();
+  placementPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+map.on("click", event => {
+  if (placementIndex === null || screenshotInProgress) return;
+
+  const index = placementIndex;
+  const point = event.latlng.wrap();
+  const lat = Number(point.lat.toFixed(6));
+  const lng = Number(point.lng.toFixed(6));
+
+  cards[index].querySelector(".coords-input").value =
+    `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+  placeMarker(index, [lat, lng]);
+  stopManualPlacement();
+});
+
+document.getElementById("cancel-placement")
+  .addEventListener("click", stopManualPlacement);
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") stopManualPlacement();
+});
 
 cards.forEach((card, index) => {
   const numEl = card.querySelector(".course-num");
@@ -765,6 +895,10 @@ cards.forEach((card, index) => {
   const degEl = card.querySelector(".course-deg");
   const compassG = card.querySelector(".compass-g");
   const coordsInput = card.querySelector(".coords-input");
+
+  card.querySelector(".btn-place").addEventListener("click", () => {
+    startManualPlacement(index);
+  });
 
   card.querySelectorAll(".icon-option").forEach(button => {
     button.addEventListener("click", () => {
@@ -776,28 +910,30 @@ cards.forEach((card, index) => {
       });
 
       refreshMarker(index);
+      updatePlacementMessage();
     });
   });
 
   function setCourse(value) {
     const course = normalizeCourse(value);
-
     card.dataset.course = String(course);
     numEl.value = String(course);
     rangeEl.value = String(course);
     degEl.textContent = `${course}°`;
-
     compassG.setAttribute("transform", `rotate(${course},50,50)`);
-
     refreshMarker(index);
   }
 
   numEl.addEventListener("input", () => {
     if (numEl.value !== "") setCourse(numEl.value);
   });
-
   numEl.addEventListener("change", () => setCourse(numEl.value));
   rangeEl.addEventListener("input", () => setCourse(rangeEl.value));
+
+  coordsInput.addEventListener("input", () => {
+    coordsInput.removeAttribute("aria-invalid");
+    setStatus(index, "Натисніть «Показати об’єкти на карті», щоб застосувати.");
+  });
 
   coordsInput.addEventListener("keydown", event => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -807,13 +943,8 @@ cards.forEach((card, index) => {
   });
 });
 
-function removeMarker(index) {
-  if (!markers[index]) return;
-  map.removeLayer(markers[index]);
-  markers[index] = null;
-}
-
 showAllButton.addEventListener("click", () => {
+  stopManualPlacement();
   errorElement.textContent = "";
 
   const bounds = [];
@@ -821,15 +952,12 @@ showAllButton.addEventListener("click", () => {
 
   cards.forEach((card, index) => {
     const input = card.querySelector(".coords-input");
-    const status = card.querySelector(".card-status");
     const raw = input.value.trim();
-    const course = normalizeCourse(card.dataset.course);
 
     if (!raw) {
-      status.textContent = "";
-      status.className = "card-status";
-      input.removeAttribute("aria-invalid");
       removeMarker(index);
+      setStatus(index, "");
+      input.removeAttribute("aria-invalid");
       return;
     }
 
@@ -837,38 +965,22 @@ showAllButton.addEventListener("click", () => {
 
     if (!point) {
       hasInvalidInput = true;
-      status.textContent = "⚠️ Невірний формат координат";
-      status.className = "card-status err";
-      input.setAttribute("aria-invalid", "true");
       removeMarker(index);
+      input.setAttribute("aria-invalid", "true");
+      setStatus(index, "⚠️ Невірний формат координат", "err");
       return;
     }
 
-    input.removeAttribute("aria-invalid");
-    removeMarker(index);
-
-    markers[index] = L.marker(point, {
-      icon: vehicleIcon(course, index),
-      keyboard: true,
-      title: objectLabel(index),
-      alt: objectLabel(index)
-    }).addTo(map).bindPopup(
-      markerPopup(index, { lat: point[0], lng: point[1] }, course)
-    );
-
-    status.textContent =
-      `✅ ${point[0].toFixed(5)}, ${point[1].toFixed(5)} | ${course}°`;
-    status.className = "card-status ok";
-
+    placeMarker(index, point);
     bounds.push(point);
   });
 
   updateCoordsOutput();
   updateScreenshotButton();
 
-  if (bounds.length === 0) {
+  if (!bounds.length) {
     errorElement.textContent =
-      "Введіть правильні координати хоча б для одного об’єкта.";
+      "Введіть правильні координати або скористайтеся ручним розміщенням.";
     return;
   }
 
@@ -878,7 +990,6 @@ showAllButton.addEventListener("click", () => {
   }
 
   map.invalidateSize();
-
   if (bounds.length === 1) {
     map.setView(bounds[0], 11);
   } else {
@@ -886,6 +997,7 @@ showAllButton.addEventListener("click", () => {
   }
 });
 
+// Скріншот, збереження та поширення
 function canvasToBlob(canvas) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
@@ -906,13 +1018,11 @@ function waitForTiles(timeout = 7000) {
     }
 
     let timer;
-
     const finish = () => {
       clearTimeout(timer);
       layer.off("load", finish);
       resolve();
     };
-
     layer.on("load", finish);
     timer = setTimeout(finish, timeout);
   })));
@@ -922,23 +1032,28 @@ async function waitForMarkerImages() {
   const images = Array.from(
     document.querySelectorAll("#map .vehicle-symbol img")
   );
-
   await Promise.all(images.map(image => {
-    if (typeof image.decode === "function") {
-      return image.decode().catch(() => {});
-    }
-    return Promise.resolve();
+    return typeof image.decode === "function"
+      ? image.decode().catch(() => {})
+      : Promise.resolve();
   }));
 }
 
 screenshotButton.addEventListener("click", async () => {
   if (screenshotInProgress) return;
 
+  stopManualPlacement();
   screenshotInProgress = true;
   screenshotButton.classList.add("loading");
   updateScreenshotButton();
   errorElement.textContent = "";
   map.closePopup();
+
+  const controls = Array.from(document.querySelectorAll(
+    "#cards-container button, #cards-container input, " +
+    "#cards-container textarea, #show-all"
+  ));
+  controls.forEach(control => { control.disabled = true; });
 
   try {
     map.stop();
@@ -962,23 +1077,18 @@ screenshotButton.addEventListener("click", async () => {
     const newBlob = await canvasToBlob(canvas);
     const newURL = URL.createObjectURL(newBlob);
 
-    if (previewObjectURL) {
-      URL.revokeObjectURL(previewObjectURL);
-    }
+    if (previewObjectURL) URL.revokeObjectURL(previewObjectURL);
 
     screenshotBlob = newBlob;
     previewObjectURL = newURL;
-    previewImg.src = previewObjectURL;
+    previewImg.src = newURL;
     previewWrap.style.display = "block";
-
-    previewWrap.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest"
-    });
+    previewWrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
   } catch (error) {
     errorElement.textContent =
       "Помилка створення скріншота: " + error.message;
   } finally {
+    controls.forEach(control => { control.disabled = false; });
     screenshotInProgress = false;
     screenshotButton.classList.remove("loading");
     updateScreenshotButton();
@@ -988,62 +1098,55 @@ screenshotButton.addEventListener("click", async () => {
 function createFileName() {
   const timestamp = new Date().toISOString()
     .slice(0, 19).replace(/[:T]/g, "-");
-
   return `objects-map_${timestamp}.png`;
 }
 
 function saveScreenshot() {
   if (!screenshotBlob) return;
 
-  const downloadURL = URL.createObjectURL(screenshotBlob);
+  const url = URL.createObjectURL(screenshotBlob);
   const link = document.createElement("a");
-
-  link.href = downloadURL;
+  link.href = url;
   link.download = createFileName();
-
   document.body.appendChild(link);
   link.click();
   link.remove();
 
-  setTimeout(() => URL.revokeObjectURL(downloadURL), 60000);
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
 document.getElementById("btn-save")
   .addEventListener("click", saveScreenshot);
 
-document.getElementById("btn-share")
-  .addEventListener("click", async () => {
-    if (!screenshotBlob) return;
+document.getElementById("btn-share").addEventListener("click", async () => {
+  if (!screenshotBlob) return;
 
-    const file = new File([screenshotBlob], createFileName(), {
-      type: "image/png"
-    });
-
-    try {
-      if (
-        navigator.share &&
-        navigator.canShare &&
-        navigator.canShare({ files: [file] })
-      ) {
-        await navigator.share({
-          title: "Об’єкти на карті",
-          text: "Карта розташування об’єктів: Герань, Ракета, Бандероль",
-          files: [file]
-        });
-      } else {
-        saveScreenshot();
-
-        errorElement.textContent =
-          "Поширення файлів у цьому браузері недоступне. " +
-          "Зображення передано для завантаження.";
-      }
-    } catch (error) {
-      if (error.name !== "AbortError") {
-        errorElement.textContent =
-          "Помилка поширення: " + error.message;
-      }
-    }
+  const file = new File([screenshotBlob], createFileName(), {
+    type: "image/png"
   });
+
+  try {
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        title: "Об’єкти на карті",
+        text: "Карта розташування об’єктів",
+        files: [file]
+      });
+    } else {
+      saveScreenshot();
+      errorElement.textContent =
+        "Поширення файлів недоступне. Зображення передано для завантаження.";
+    }
+  } catch (error) {
+    if (error.name !== "AbortError") {
+      errorElement.textContent = "Помилка поширення: " + error.message;
+    }
+  }
+});
 
 document.getElementById("btn-close").addEventListener("click", () => {
   previewWrap.style.display = "none";
@@ -1053,12 +1156,10 @@ document.getElementById("btn-close").addEventListener("click", () => {
     URL.revokeObjectURL(previewObjectURL);
     previewObjectURL = null;
   }
-
   screenshotBlob = null;
 });
 
 window.addEventListener("resize", () => map.invalidateSize());
 </script>
-
 </body>
 </html>
