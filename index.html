@@ -45,7 +45,10 @@ button {
   font-weight: 600;
 }
 
-button:disabled { opacity: .45; cursor: not-allowed; }
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
 
 button:focus-visible,
 select:focus-visible,
@@ -68,8 +71,14 @@ summary:focus-visible {
 }
 
 .top-tools button { font-size: 13px; }
-#count { flex: 1 1 180px; font-size: 13px; color: #596575; }
 
+#count {
+  flex: 1 1 180px;
+  font-size: 13px;
+  color: #596575;
+}
+
+/* Картки об’єктів */
 .card {
   margin-bottom: 8px;
   background: white;
@@ -90,12 +99,26 @@ summary:focus-visible {
 }
 
 .card summary::-webkit-details-marker { display: none; }
-.card summary::after { content: "▾"; margin-left: 5px; color: #64748b; }
+.card summary::after { content: "▾"; color: #64748b; }
 .card[open] summary::after { content: "▴"; }
 
-.summary-icon { width: 20px; height: 20px; object-fit: contain; }
-.card-name { flex: 1; font-weight: 700; color: #172554; }
-.card-meta { font-size: 12px; color: #687386; }
+.summary-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.card-name {
+  flex: 1;
+  font-weight: 700;
+  color: #172554;
+}
+
+.card-meta {
+  font-size: 12px;
+  color: #687386;
+}
+
 .card-body { padding: 0 12px 12px; }
 
 .picker {
@@ -117,7 +140,10 @@ summary:focus-visible {
   font-size: 13px;
 }
 
-.type-button img { width: 18px; height: 18px; }
+.type-button img {
+  width: 18px;
+  height: 18px;
+}
 
 .type-button[aria-pressed="true"] {
   color: #991b1b;
@@ -125,7 +151,11 @@ summary:focus-visible {
   border-color: #dc2626;
 }
 
-.card label { display: block; font-size: 13px; margin-bottom: 5px; }
+.card label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
 
 .coords {
   width: 100%;
@@ -146,10 +176,27 @@ summary:focus-visible {
   margin-top: 8px;
 }
 
-.card-actions button { flex: 1; font-size: 13px; }
-.status { margin-top: 7px; font-size: 12px; color: #596575; }
-.status.err, #error { color: #b42318; }
-#empty { padding: 15px; text-align: center; color: #687386; }
+.card-actions button {
+  flex: 1;
+  font-size: 13px;
+}
+
+.status {
+  margin-top: 7px;
+  font-size: 12px;
+  color: #596575;
+}
+
+.status.err,
+#error {
+  color: #b42318;
+}
+
+#empty {
+  padding: 15px;
+  text-align: center;
+  color: #687386;
+}
 
 body.cards-hidden #cards,
 body.cards-hidden #empty,
@@ -158,8 +205,17 @@ body.cards-hidden #expand-all {
   display: none !important;
 }
 
-.note { color: #687386; font-size: 12px; line-height: 1.5; }
-#error { margin: 8px 0; font-size: 14px; min-height: 18px; }
+.note {
+  color: #687386;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#error {
+  margin: 8px 0;
+  font-size: 14px;
+  min-height: 18px;
+}
 
 #coords-out {
   white-space: pre-line;
@@ -169,9 +225,14 @@ body.cards-hidden #expand-all {
   overflow: auto;
 }
 
-.output-details { margin-top: 10px; font-size: 13px; }
+.output-details {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
 .output-details summary { cursor: pointer; }
 
+/* Карта */
 #map-wrap {
   position: relative;
   margin-top: 12px;
@@ -187,8 +248,6 @@ body.cards-hidden #expand-all {
   background: #17202a;
 }
 
-/* Фільтр лише для затемненого шару OpenStreetMap.
-   CARTO Dark Matter має власний темний стиль. */
 .dark-tiles {
   filter: brightness(.6) invert(1) contrast(3)
     hue-rotate(200deg) saturate(.3) brightness(.7);
@@ -215,7 +274,11 @@ body.cards-hidden #expand-all {
   color: #17202a;
 }
 
-.map-toolbar button { font-size: 13px; min-height: 38px; }
+.map-toolbar button {
+  font-size: 13px;
+  min-height: 38px;
+}
+
 #fullscreen { margin-left: auto; }
 
 #map-hint {
@@ -226,8 +289,12 @@ body.cards-hidden #expand-all {
   line-height: 1.4;
 }
 
-.popup-delete { width: 100%; margin-top: 10px; }
+.popup-delete {
+  width: 100%;
+  margin-top: 10px;
+}
 
+/* Маркер і стрілка */
 .heading-icon {
   background: none;
   border: 0;
@@ -379,6 +446,7 @@ body.cards-hidden #expand-all {
 #map-wrap::backdrop { background: #172554; }
 body.map-fullscreen-open { overflow: hidden; }
 
+/* Перегляд скріншота */
 #preview {
   margin-top: 12px;
   border-radius: 12px;
@@ -386,7 +454,10 @@ body.map-fullscreen-open { overflow: hidden; }
   background: white;
 }
 
-#preview-img { display: block; width: 100%; }
+#preview-img {
+  display: block;
+  width: 100%;
+}
 
 .preview-actions {
   display: flex;
@@ -403,10 +474,15 @@ footer {
   text-align: center;
   color: #687386;
   font-size: 12px;
+  line-height: 1.5;
 }
 
 @media (max-width: 480px) {
-  .card-meta { max-width: 110px; text-align: right; }
+  .card-meta {
+    max-width: 110px;
+    text-align: right;
+  }
+
   #fullscreen { margin-left: 0; }
 }
 
@@ -419,6 +495,7 @@ footer {
 </head>
 
 <body>
+
 <header>
   <h1>Трекер об’єктів</h1>
   <p>
@@ -429,18 +506,35 @@ footer {
 <main>
   <div class="top-tools">
     <span id="count" role="status" aria-live="polite"></span>
-    <button id="collapse-all" class="secondary" type="button">Згорнути всі</button>
-    <button id="expand-all" class="secondary" type="button">Розгорнути всі</button>
+
+    <button id="collapse-all" class="secondary" type="button">
+      Згорнути всі
+    </button>
+
+    <button id="expand-all" class="secondary" type="button">
+      Розгорнути всі
+    </button>
+
     <button id="toggle-cards" class="secondary" type="button"
-      aria-controls="cards" aria-expanded="true">Приховати картки</button>
+      aria-controls="cards" aria-expanded="true">
+      Приховати картки
+    </button>
   </div>
 
   <div id="cards"></div>
-  <div id="empty" hidden>Об’єктів немає. Додайте картку або об’єкт на карті.</div>
+
+  <div id="empty" hidden>
+    Об’єктів немає. Додайте картку або об’єкт на карті.
+  </div>
 
   <div class="top-tools">
-    <button id="add-card" class="add" type="button">＋ Додати картку</button>
-    <button id="show-all" class="primary" type="button">📍 Показати за координатами</button>
+    <button id="add-card" class="add" type="button">
+      ＋ Додати картку
+    </button>
+
+    <button id="show-all" class="primary" type="button">
+      📍 Показати за координатами
+    </button>
   </div>
 
   <p class="note">
@@ -452,6 +546,7 @@ footer {
     <b>Клавіатура:</b> перейдіть до стрілки клавішею Tab.
     Клавіші зі стрілками змінюють курс на 1°, із Shift — на 10°.<br>
     Пунктир не відповідає реальній відстані або прогнозу руху.
+    Початковий курс нової мітки — 0°.
     0° — північ, 90° — схід.
   </p>
 
@@ -460,18 +555,33 @@ footer {
   <div id="map-wrap">
     <div class="map-toolbar">
       <label for="map-type">Тип:</label>
+
       <select id="map-type">
         <option value="geran">Герань</option>
         <option value="rocket">Ракета</option>
         <option value="banderol">Бандероль</option>
       </select>
 
-      <button id="map-add" class="add" type="button" aria-pressed="false">＋ Додати</button>
-      <button id="map-done" class="secondary" type="button" hidden>Готово</button>
-      <button id="fit-all" class="secondary" type="button">Показати всі</button>
-      <button id="screenshot" class="secondary" type="button" disabled>📸 Скріншот</button>
+      <button id="map-add" class="add" type="button" aria-pressed="false">
+        ＋ Додати
+      </button>
+
+      <button id="map-done" class="secondary" type="button" hidden>
+        Готово
+      </button>
+
+      <button id="fit-all" class="secondary" type="button">
+        Показати всі
+      </button>
+
+      <button id="screenshot" class="secondary" type="button" disabled>
+        📸 Скріншот
+      </button>
+
       <button id="fullscreen" class="secondary" type="button"
-        aria-pressed="false">⛶ На весь екран</button>
+        aria-pressed="false">
+        ⛶ На весь екран
+      </button>
     </div>
 
     <div id="map-hint" role="status" aria-live="polite" hidden></div>
@@ -485,6 +595,7 @@ footer {
 
   <div id="preview" hidden>
     <img id="preview-img" alt="Скріншот карти">
+
     <div class="preview-actions">
       <button id="save" class="add" type="button">Зберегти</button>
       <button id="share" class="primary" type="button">Поділитися</button>
@@ -495,8 +606,8 @@ footer {
 </main>
 
 <footer>
-  Карта — OpenStreetMap / CARTO / Google.
-  Потрібне підключення до інтернету.
+  Карта — OpenStreetMap / Google. Потрібне підключення до інтернету.<br>
+  Об’єкти внесені вручну. Після перезавантаження сторінки дані не зберігаються.
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -518,6 +629,7 @@ let previewURL = null;
 let fullscreenTransition = false;
 let savedPageScroll = null;
 
+/* Вбудовані іконки — папка assets не потрібна */
 function iconURL(path) {
   return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg"
@@ -554,7 +666,7 @@ const TYPES = {
   }
 };
 
-/* Базові карти */
+/* Базові карти — без CARTO */
 const attribution =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
@@ -586,49 +698,19 @@ const dark = L.tileLayer(
   }
 );
 
-/* Нові шари CARTO */
-const cartoAttribution =
-  attribution +
-  ' &copy; <a href="https://carto.com/attributions">CARTO</a>';
+const baseLayers = [osm, satellite, dark];
 
-const cartoLight = L.tileLayer(
-  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-  {
-    subdomains: "abcd",
-    maxZoom: 20,
-    crossOrigin: true,
-    attribution: cartoAttribution
-  }
-);
-
-const cartoDark = L.tileLayer(
-  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-  {
-    subdomains: "abcd",
-    maxZoom: 20,
-    crossOrigin: true,
-    attribution: cartoAttribution
-  }
-);
-
-const baseLayers = [
-  osm,
-  satellite,
-  dark,
-  cartoLight,
-  cartoDark
-];
-
-const map = L.map("map", { layers: [osm] })
-  .setView([48.35, 32.25], 9);
+const map = L.map("map", {
+  layers: [osm]
+}).setView([48.35, 32.25], 9);
 
 L.control.layers({
   "🗺 Схема — OpenStreetMap": osm,
-  "☀️ Світла — CARTO Positron": cartoLight,
-  "🌙 Темна — CARTO Dark Matter": cartoDark,
   "🛰 Супутник — Google": satellite,
-  "🌘 Затемнена — OpenStreetMap": dark
-}, null, { position: "topright" }).addTo(map);
+  "🌙 Темна — OpenStreetMap": dark
+}, null, {
+  position: "topright"
+}).addTo(map);
 
 const mapEl = map.getContainer();
 const mapWrap = $("map-wrap");
@@ -666,6 +748,7 @@ function status(o, text, error = false) {
 function updateCard(o) {
   o.card.querySelector(".card-name").textContent = nameOf(o);
   o.card.querySelector(".summary-icon").src = TYPES[o.type].image;
+
   o.card.querySelector(".card-meta").textContent =
     o.marker ? `На карті · ${o.course}°` : "Не розміщено";
 
@@ -726,6 +809,7 @@ function createCard(o, open) {
       </div>
 
       <label for="coords-${o.id}">Координати</label>
+
       <textarea id="coords-${o.id}" class="coords"
         placeholder="48.123456, 32.654321"
         autocapitalize="off" autocomplete="off" spellcheck="false"
@@ -735,7 +819,9 @@ function createCard(o, open) {
         <button type="button" class="place secondary">
           📍 Вказати на карті
         </button>
-        <button type="button" class="delete danger">🗑 Видалити</button>
+        <button type="button" class="delete danger">
+          🗑 Видалити
+        </button>
       </div>
 
       <div id="status-${o.id}" class="status" aria-live="polite"></div>
@@ -747,7 +833,10 @@ function createCard(o, open) {
   card.querySelector(".place").onclick = () => {
     if (busy) return;
 
-    const same = placement?.mode === "existing" && placement.id === o.id;
+    const same =
+      placement?.mode === "existing" &&
+      placement.id === o.id;
+
     stopPlacement();
 
     if (!same) {
@@ -758,8 +847,8 @@ function createCard(o, open) {
   card.querySelectorAll(".type-button").forEach(button => {
     button.onclick = () => {
       if (busy) return;
-      finishDrag();
 
+      finishDrag();
       o.type = button.dataset.type;
 
       card.querySelectorAll(".type-button").forEach(b => {
@@ -820,6 +909,7 @@ function addObject(type = "geran", open = false, point = null) {
   if (point) {
     o.card.querySelector(".coords").value =
       `${point[0].toFixed(6)}, ${point[1].toFixed(6)}`;
+
     placeMarker(o, point);
   }
 
@@ -840,6 +930,7 @@ function deleteObject(id) {
 
   o.card.remove();
   objects.delete(id);
+
   updateSummary();
 }
 
@@ -855,6 +946,7 @@ function markerIcon(o) {
         <div class="heading-direction"
           style="transform:rotate(${o.course}deg)">
           <div class="heading-ray" aria-hidden="true"></div>
+
           <button type="button" class="course-handle" data-id="${o.id}"
             aria-label="Курс ${nameOf(o)}: ${o.course}°"
             title="Перетягніть для зміни курсу"></button>
@@ -896,7 +988,9 @@ function popupContent(o) {
 }
 
 function refreshPopup(o) {
-  if (o.marker) o.marker.setPopupContent(popupContent(o));
+  if (o.marker) {
+    o.marker.setPopupContent(popupContent(o));
+  }
 }
 
 function placeMarker(o, point) {
@@ -950,7 +1044,7 @@ function setCourse(o, value) {
   updateSummary();
 }
 
-/* Приховування та згортання карток */
+/* Згортання та приховування карток */
 function setCardsHidden(hidden) {
   document.body.classList.toggle("cards-hidden", hidden);
 
@@ -986,18 +1080,18 @@ $("add-card").onclick = () => {
   o.card.scrollIntoView({ behavior: "smooth", block: "nearest" });
 };
 
-/* Додавання та розміщення на карті */
+/* Додавання та розміщення безпосередньо на карті */
 function updateHint() {
   if (!placement) return;
 
   if (placement.mode === "new") {
     $("map-hint").textContent =
       `Додавання: ${TYPES[$("map-type").value].label}. ` +
-      "Натискайте на карту для створення об’єктів. Після завершення — «Готово».";
+      "Натискайте на карту. Після завершення — «Готово».";
   } else {
     const o = objects.get(placement.id);
     $("map-hint").textContent = o
-      ? `${nameOf(o)}: натисніть на потрібне місце карти.`
+      ? `${nameOf(o)}: виберіть місце на карті.`
       : "";
   }
 }
@@ -1005,6 +1099,7 @@ function updateHint() {
 function stopPlacement() {
   placement = null;
   mapEl.classList.remove("placing");
+
   $("map-hint").hidden = true;
   $("map-done").hidden = true;
   $("map-add").setAttribute("aria-pressed", "false");
@@ -1026,12 +1121,14 @@ function startPlacement(value, scroll = false) {
   map.closePopup();
 
   mapEl.classList.add("placing");
+
   $("map-hint").hidden = false;
   $("map-done").hidden = false;
   $("map-add").setAttribute("aria-pressed", String(value.mode === "new"));
 
   if (value.mode === "existing") {
     const o = objects.get(value.id);
+
     if (o) {
       o.card.classList.add("placing");
       o.card.querySelector(".place").textContent = "✕ Скасувати";
@@ -1116,6 +1213,7 @@ function updateDrag(event) {
 
   if (!drag.moved) {
     if (pointer.distanceTo(drag.start) < 3) return;
+
     drag.moved = true;
     o.marker.closePopup();
   }
@@ -1282,7 +1380,7 @@ mapEl.addEventListener("keydown", event => {
 
 window.addEventListener("blur", () => finishDrag());
 
-/* Масштабування та застосування координат */
+/* Координати та масштабування */
 function fitAll() {
   if (busy) return;
   finishDrag();
@@ -1298,7 +1396,10 @@ function fitAll() {
   if (points.length === 1) {
     map.setView(points[0], 11);
   } else {
-    map.fitBounds(points, { padding: [90, 90], maxZoom: 14 });
+    map.fitBounds(points, {
+      padding: [90, 90],
+      maxZoom: 14
+    });
   }
 }
 
@@ -1407,7 +1508,7 @@ async function enterMapFullscreen() {
       syncFullscreenUI();
       return;
     } catch {
-      // Резервне розгортання на всю видиму область сторінки.
+      // Резервний режим для браузерів без доступу до Fullscreen API.
     }
   }
 
@@ -1439,7 +1540,7 @@ $("fullscreen").onclick = async () => {
     }
   } catch (error) {
     $("error").textContent =
-      "Не вдалося змінити повноекранний режим: " + error.message;
+      "Помилка повноекранного режиму: " + error.message;
   } finally {
     fullscreenTransition = false;
     syncFullscreenUI();
@@ -1464,8 +1565,8 @@ document.addEventListener("keydown", event => {
 });
 
 if (typeof ResizeObserver !== "undefined") {
-  const mapResizeObserver = new ResizeObserver(refreshMapSize);
-  mapResizeObserver.observe(mapEl);
+  const observer = new ResizeObserver(refreshMapSize);
+  observer.observe(mapEl);
 }
 
 window.addEventListener("resize", () => {
@@ -1473,8 +1574,7 @@ window.addEventListener("resize", () => {
   refreshMapSize();
 });
 
-/* Скріншот карти.
-   Очікуємо активний шар, включно з обома картами CARTO. */
+/* Скріншоти */
 function waitTiles(timeout = 7000) {
   return Promise.all(
     baseLayers
@@ -1507,6 +1607,7 @@ $("screenshot").onclick = async () => {
 
   busy = true;
   updateSummary();
+
   $("screenshot").textContent = "⏳ Створення…";
   $("error").textContent = "";
   map.closePopup();
@@ -1523,7 +1624,7 @@ $("screenshot").onclick = async () => {
   const handlers = pauseHandlers();
   mapWrap.classList.add("capturing");
 
-  let resultCreated = false;
+  let created = false;
   let captureError = null;
 
   try {
@@ -1565,7 +1666,7 @@ $("screenshot").onclick = async () => {
     $("preview-img").src = previewURL;
     $("preview").hidden = false;
 
-    resultCreated = true;
+    created = true;
   } catch (error) {
     captureError = error;
   } finally {
@@ -1585,7 +1686,7 @@ $("screenshot").onclick = async () => {
     try {
       await exitMapFullscreen();
     } catch {
-      // За потреби користувач може вийти кнопкою.
+      // За потреби вийдіть із повноекранного режиму кнопкою.
     }
   }
 
@@ -1594,7 +1695,7 @@ $("screenshot").onclick = async () => {
       "Помилка скріншота: " + captureError.message;
   }
 
-  if (resultCreated) {
+  if (created) {
     requestAnimationFrame(() => {
       $("preview").scrollIntoView({
         behavior: "smooth",
@@ -1606,7 +1707,8 @@ $("screenshot").onclick = async () => {
 
 function filename() {
   const timestamp = new Date().toISOString()
-    .slice(0, 19).replace(/[:T]/g, "-");
+    .slice(0, 19)
+    .replace(/[:T]/g, "-");
 
   return `objects-map_${timestamp}.png`;
 }
@@ -1619,6 +1721,7 @@ function saveScreenshot() {
 
   link.href = url;
   link.download = filename();
+
   document.body.appendChild(link);
   link.click();
   link.remove();
@@ -1646,6 +1749,7 @@ $("share").onclick = async () => {
       });
     } else {
       saveScreenshot();
+
       $("error").textContent =
         "Поширення файлів недоступне. Зображення передано для завантаження.";
     }
@@ -1668,7 +1772,7 @@ $("close-preview").onclick = () => {
 };
 
 /* Три початкові згорнуті картки.
-   Кількість об’єктів можна змінювати кнопками. */
+   Можна додавати більше або видалити всі. */
 for (let i = 0; i < 3; i++) {
   addObject("geran", false);
 }
