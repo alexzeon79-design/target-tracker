@@ -187,6 +187,8 @@ body.cards-hidden #expand-all {
   background: #17202a;
 }
 
+/* Фільтр лише для затемненого шару OpenStreetMap.
+   CARTO Dark Matter має власний темний стиль. */
 .dark-tiles {
   filter: brightness(.6) invert(1) contrast(3)
     hue-rotate(200deg) saturate(.3) brightness(.7);
@@ -493,7 +495,8 @@ footer {
 </main>
 
 <footer>
-  Карта — OpenStreetMap / Google. Потрібне підключення до інтернету.
+  Карта — OpenStreetMap / CARTO / Google.
+  Потрібне підключення до інтернету.
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -551,17 +554,26 @@ const TYPES = {
   }
 };
 
+/* Базові карти */
 const attribution =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 const osm = L.tileLayer(
   "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  { maxZoom: 19, crossOrigin: true, attribution }
+  {
+    maxZoom: 19,
+    crossOrigin: true,
+    attribution
+  }
 );
 
 const satellite = L.tileLayer(
   "https://mt1.google.com/vt/lyrs=y&hl=uk&x={x}&y={y}&z={z}",
-  { maxZoom: 20, crossOrigin: true, attribution: "&copy; Google Maps" }
+  {
+    maxZoom: 20,
+    crossOrigin: true,
+    attribution: "&copy; Google Maps"
+  }
 );
 
 const dark = L.tileLayer(
@@ -574,18 +586,52 @@ const dark = L.tileLayer(
   }
 );
 
+/* Нові шари CARTO */
+const cartoAttribution =
+  attribution +
+  ' &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
+const cartoLight = L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+  {
+    subdomains: "abcd",
+    maxZoom: 20,
+    crossOrigin: true,
+    attribution: cartoAttribution
+  }
+);
+
+const cartoDark = L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+  {
+    subdomains: "abcd",
+    maxZoom: 20,
+    crossOrigin: true,
+    attribution: cartoAttribution
+  }
+);
+
+const baseLayers = [
+  osm,
+  satellite,
+  dark,
+  cartoLight,
+  cartoDark
+];
+
 const map = L.map("map", { layers: [osm] })
   .setView([48.35, 32.25], 9);
 
 L.control.layers({
-  "🗺 Схема": osm,
-  "🛰 Супутник": satellite,
-  "🌙 Темна": dark
+  "🗺 Схема — OpenStreetMap": osm,
+  "☀️ Світла — CARTO Positron": cartoLight,
+  "🌙 Темна — CARTO Dark Matter": cartoDark,
+  "🛰 Супутник — Google": satellite,
+  "🌘 Затемнена — OpenStreetMap": dark
 }, null, { position: "topright" }).addTo(map);
 
 const mapEl = map.getContainer();
 const mapWrap = $("map-wrap");
-
 const nameOf = o => `${TYPES[o.type].label} ${o.id}`;
 
 function normalize(value) {
@@ -904,7 +950,7 @@ function setCourse(o, value) {
   updateSummary();
 }
 
-// Приховування та згортання карток.
+/* Приховування та згортання карток */
 function setCardsHidden(hidden) {
   document.body.classList.toggle("cards-hidden", hidden);
 
@@ -940,7 +986,7 @@ $("add-card").onclick = () => {
   o.card.scrollIntoView({ behavior: "smooth", block: "nearest" });
 };
 
-// Додавання та розміщення безпосередньо на карті.
+/* Додавання та розміщення на карті */
 function updateHint() {
   if (!placement) return;
 
@@ -1045,7 +1091,7 @@ map.on("click", event => {
   }
 });
 
-// Перетягування іконки та стрілки.
+/* Перетягування іконки та стрілки */
 function pauseHandlers() {
   const handlers = [
     map.dragging,
@@ -1236,7 +1282,7 @@ mapEl.addEventListener("keydown", event => {
 
 window.addEventListener("blur", () => finishDrag());
 
-// Масштабування та застосування координат.
+/* Масштабування та застосування координат */
 function fitAll() {
   if (busy) return;
   finishDrag();
@@ -1309,7 +1355,7 @@ $("show-all").onclick = () => {
   fitAll();
 };
 
-// Повноекранний режим із резервним режимом для браузерів без Fullscreen API.
+/* Повноекранний режим */
 function isMapFullscreen() {
   return (
     document.fullscreenElement === mapWrap ||
@@ -1427,10 +1473,11 @@ window.addEventListener("resize", () => {
   refreshMapSize();
 });
 
-// Скріншот карти без панелі редагування.
+/* Скріншот карти.
+   Очікуємо активний шар, включно з обома картами CARTO. */
 function waitTiles(timeout = 7000) {
   return Promise.all(
-    [osm, satellite, dark]
+    baseLayers
       .filter(layer => map.hasLayer(layer))
       .map(layer => new Promise(resolve => {
         if (!layer.isLoading()) {
@@ -1534,17 +1581,17 @@ $("screenshot").onclick = async () => {
     updateSummary();
   }
 
-  // Виходимо з повноекранного режиму, щоб показати результат.
   if (isMapFullscreen()) {
     try {
       await exitMapFullscreen();
     } catch {
-      // Якщо браузер не дозволив вихід, користувач може вийти кнопкою.
+      // За потреби користувач може вийти кнопкою.
     }
   }
 
   if (captureError) {
-    $("error").textContent = "Помилка скріншота: " + captureError.message;
+    $("error").textContent =
+      "Помилка скріншота: " + captureError.message;
   }
 
   if (resultCreated) {
@@ -1604,7 +1651,8 @@ $("share").onclick = async () => {
     }
   } catch (error) {
     if (error.name !== "AbortError") {
-      $("error").textContent = "Помилка поширення: " + error.message;
+      $("error").textContent =
+        "Помилка поширення: " + error.message;
     }
   }
 };
@@ -1619,8 +1667,8 @@ $("close-preview").onclick = () => {
   screenshotBlob = null;
 };
 
-// Три початкові згорнуті картки.
-// Кнопками можна додавати більше або видалити всі.
+/* Три початкові згорнуті картки.
+   Кількість об’єктів можна змінювати кнопками. */
 for (let i = 0; i < 3; i++) {
   addObject("geran", false);
 }
